@@ -14,4 +14,7 @@ for filename in os.listdir(files_dir):
     print('--------------------------------------------')
 
     # Call get_peak_height.py script using subprocess
-    subprocess.call(['python', 'get_peak_height.py', files_dir, filename, out_path])
+    try:
+        subprocess.call(['python', 'get_peak_height.py', files_dir, filename, out_path])
+    except FileNotFoundError:
+        subprocess.call(['python3', 'get_peak_height.py', files_dir, filename, out_path])
