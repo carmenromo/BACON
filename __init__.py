@@ -1,0 +1,3 @@
+"""
+BACON analysis
+"""
