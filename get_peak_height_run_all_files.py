@@ -5,6 +5,8 @@ import glob
 import subprocess
 import uproot
 
+import numpy as np
+
 files_dir         = sys.argv[1]
 files_prefix_name = sys.argv[2]
 out_path          = sys.argv[3]
