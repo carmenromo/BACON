@@ -10,7 +10,8 @@ files_prefix_name = sys.argv[2]
 out_path          = sys.argv[3]
 
 #for filename in os.listdir(files_dir):
-for file_name in glob.glob(f"{files_dir}/{files_prefix_name}" + '*'):
+all_files = glob.glob(f"{files_dir}/{files_prefix_name}" + '*')
+for file_name in np.sort(all_files):
 
     filename = file_name.split("/")[-1]
 
