@@ -27,7 +27,7 @@ outfile = f"{out_path}/bacon_peak_height_and_area_{file_name}"
 sipm_thr = 50 #ADCs
 peak_sep = 10
 
-total_SiPMs = 1
+total_SiPMs = 9
 dead_SiPMs  = [3]
 
 for channel in range(total_SiPMs):
