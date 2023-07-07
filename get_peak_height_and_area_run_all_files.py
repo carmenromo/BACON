@@ -23,8 +23,8 @@ for file_name in np.sort(all_files):
 
     # Call get_peak_height.py script using subprocess
     try:
-        subprocess.call(['python', 'get_peak_height.py', files_dir, filename, out_path])
+        subprocess.call(['python', 'get_peak_height_and_area.py', files_dir, filename, out_path])
     except FileNotFoundError:
-        subprocess.call(['python3', 'get_peak_height.py', files_dir, filename, out_path])
+        subprocess.call(['python3', 'get_peak_height_and_area.py', files_dir, filename, out_path])
     except uproot.exceptions.KeyInFileError:
         continue
