@@ -1,14 +1,18 @@
 
 import os
 import sys
+import glob
 import subprocess
 import uproot
 
-files_dir = sys.argv[1]
-out_path  = sys.argv[2]
+files_dir         = sys.argv[1]
+files_prefix_name = sys.argv[2]
+out_path          = sys.argv[3]
 
-for filename in os.listdir(files_dir):
-    filepath = os.path.join(files_dir, filename)
+#for filename in os.listdir(files_dir):
+for file_name in glob.glob(f"{files_dir}/{files_prefix_name}" + '*'):
+
+    filename = file_name.split("/")[-1]
 
     print('--------------------------------------------')
     print("Analyzing file: ", filename)
