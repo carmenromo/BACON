@@ -33,13 +33,16 @@ dead_SiPMs  = [3]
 for channel in range(total_SiPMs):
     print(channel)
     if channel in dead_SiPMs: continue
-    zs_wfs, subt_wfs_filt, all_peaks = pf.get_peaks_using_peakutils(RawTree, channel, sipm_thr=sipm_thr)
-    heights                          = pf.height_of_peaks(subt_wfs_filt, all_peaks)
-    areas                            = pf.area_of_peaks(  subt_wfs_filt, all_peaks)
-    areas_zs                         = pf.area_zs(zs_wfs, subt_wfs_filt, peak_sep=peak_sep)
-    peak_heigh_all_channels  .append(heights)
-    peak_area_all_channels   .append(areas)
-    peak_area_zs_all_channels.append(areas_zs)
+    try:
+        zs_wfs, subt_wfs_filt, all_peaks = pf.get_peaks_using_peakutils(RawTree, channel, sipm_thr=sipm_thr)
+        heights                          = pf.height_of_peaks(subt_wfs_filt, all_peaks)
+        areas                            = pf.area_of_peaks(  subt_wfs_filt, all_peaks)
+        areas_zs                         = pf.area_zs(zs_wfs, subt_wfs_filt, peak_sep=peak_sep)
+        peak_heigh_all_channels  .append(heights)
+        peak_area_all_channels   .append(areas)
+        peak_area_zs_all_channels.append(areas_zs)
+    except ValueError:
+        continue
 
 peak_heigh_all_channels   = np.array(peak_heigh_all_channels,   dtype=object)
 peak_area_all_channels    = np.array(peak_area_all_channels,    dtype=object)
