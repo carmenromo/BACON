@@ -65,17 +65,6 @@ def split_in_peaks_vals(wfs, stride, len_peak=5):
     else:
         return []
 
-# def get_height_charge_for_a_channel(RawTree, channel, sipm_thr=50):
-#     all_raw_wfs            = np.array(RawTree[f'chan{channel}/rdigi'].array())
-#     subt_raw_wfs           = list(map(subtract_baseline, all_raw_wfs))
-#     zs_raw_wfs             = noise_suppression(subt_raw_wfs, sipm_thr)
-#     filter_empty_wfs       = zs_raw_wfs[np.any(zs_raw_wfs != 0, axis=1)]
-#     peaks_splitted_vals    = list(map(split_in_peaks_vals,    filter_empty_wfs, np.tile(peak_sep, len(subt_raw_wfs))))
-#     #peaks_splitted_indices = list(map(split_in_peaks_indices, filter_empty_wfs, np.tile(peak_sep, len(subt_raw_wfs))))
-#     peaks_splitted_vals_flattened = flatten_list(peaks_splitted_vals)
-#     max_peak_channel       = list(map(max, peaks_splitted_vals_flattened))
-#     return max_peak_channel
-
 def get_peaks_peakutils(waveform):
     return peakutils.indexes(waveform, thres=0.35, min_dist=100)
     

@@ -12,7 +12,7 @@ in_path   = arguments.in_path
 file_name = arguments.file_name
 out_path  = arguments.out_path
 
-peak_heigh_all_channels   = []
+peak_height_all_channels  = []
 peak_area_all_channels    = []
 peak_area_zs_all_channels = []
 
@@ -38,17 +38,17 @@ for channel in range(total_SiPMs):
         heights                          = pf.height_of_peaks(subt_wfs_filt, all_peaks)
         areas                            = pf.area_of_peaks(  subt_wfs_filt, all_peaks)
         areas_zs                         = pf.area_zs(zs_wfs, subt_wfs_filt, peak_sep=peak_sep)
-        peak_heigh_all_channels  .append(heights)
+        peak_height_all_channels .append(heights)
         peak_area_all_channels   .append(areas)
         peak_area_zs_all_channels.append(areas_zs)
     except ValueError:
         continue
 
-peak_heigh_all_channels   = np.array(peak_heigh_all_channels,   dtype=object)
+peak_height_all_channels  = np.array(peak_height_all_channels,  dtype=object)
 peak_area_all_channels    = np.array(peak_area_all_channels,    dtype=object)
 peak_area_zs_all_channels = np.array(peak_area_zs_all_channels, dtype=object)
 
 np.savez(outfile, 
-         peak_heigh_all_channels=peak_heigh_all_channels, 
+         peak_height_all_channels=peak_height_all_channels,
          peak_area_all_channels=peak_area_all_channels, 
          peak_area_zs_all_channels=peak_area_zs_all_channels)
