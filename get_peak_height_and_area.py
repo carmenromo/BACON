@@ -1,6 +1,5 @@
 
 import sys
-import argparse
 import uproot
 
 import numpy as np
@@ -12,9 +11,12 @@ in_path   = arguments.in_path
 file_name = arguments.file_name
 out_path  = arguments.out_path
 
-peak_height_all_channels  = []
-peak_area_all_channels    = []
-peak_area_zs_all_channels = []
+total_SiPMs = 9
+dead_SiPMs  = [3]
+
+peak_height_all_channels  = [[] for i in range(total_SiPMs - len(dead_SiPMs))]
+peak_area_all_channels    = [[] for i in range(total_SiPMs - len(dead_SiPMs))]
+peak_area_zs_all_channels = [[] for i in range(total_SiPMs - len(dead_SiPMs))]
 
 if file_name.endswith(".root"):
     file_name = file_name[:-5]
@@ -27,10 +29,7 @@ outfile = f"{out_path}/bacon_peak_height_and_area_{file_name}"
 sipm_thr = 50 #ADCs
 peak_sep = 10
 
-total_SiPMs = 9
-dead_SiPMs  = [3]
-
-for channel in range(total_SiPMs):
+for i,channel in enumerate(range(total_SiPMs)):
     print(channel)
     if channel in dead_SiPMs: continue
     try:
@@ -38,9 +37,9 @@ for channel in range(total_SiPMs):
         heights                          = pf.height_of_peaks(subt_wfs_filt, all_peaks)
         areas                            = pf.area_of_peaks(  subt_wfs_filt, all_peaks)
         areas_zs                         = pf.area_zs(zs_wfs, subt_wfs_filt, peak_sep=peak_sep)
-        peak_height_all_channels .append(heights)
-        peak_area_all_channels   .append(areas)
-        peak_area_zs_all_channels.append(areas_zs)
+        peak_height_all_channels [i].append(heights)
+        peak_area_all_channels   [i].append(areas)
+        peak_area_zs_all_channels[i].append(areas_zs)
     except ValueError:
         continue
 
