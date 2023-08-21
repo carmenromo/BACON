@@ -3,6 +3,7 @@
 import numpy as np
 import scipy
 
+import matplotlib.pyplot as plt
 from collections import namedtuple
 
 FitFunction = namedtuple('FitFunction', ['fn', 'values', 'errors', 'chi2', 'pvalue', 'cov'])

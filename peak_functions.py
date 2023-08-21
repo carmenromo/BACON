@@ -65,8 +65,8 @@ def split_in_peaks_vals(wfs, stride, len_peak=5):
     else:
         return []
 
-def get_peaks_peakutils(waveform):
-    return peakutils.indexes(waveform, thres=0.35, min_dist=100)
+# def get_peaks_peakutils(waveform):
+#     return peakutils.indexes(waveform, thres=0.35, min_dist=100)
     
 def peak_height(waveform, peaks):
     return np.array([waveform[peak] for peak in peaks])
@@ -94,20 +94,62 @@ def integrate_peaks(waveform, peaks):
     return np.array([np.sum(waveform[idx]) for idx in peaks_indxs])
 
 
-def get_peaks_using_peakutils(RawTree, channel, sipm_thr=50):
+# def get_peaks_using_peakutils(RawTree, channel, sipm_thr=50):
+#     all_raw_wfs       = np.array(RawTree[f'chan{channel}/rdigi'].array())
+#     subt_raw_wfs      = list(map(subtract_baseline, all_raw_wfs))
+#     zs_raw_wfs        = noise_suppression(subt_raw_wfs, threshold=sipm_thr)
+#     filter_empty_wfs  = zs_raw_wfs[np.any(zs_raw_wfs != 0, axis=1)]
+#     subt_raw_wfs_filt = np.array(subt_raw_wfs)[np.any(zs_raw_wfs != 0, axis=1)]
+#     all_peaks         = list(map(get_peaks_peakutils, filter_empty_wfs))
+#     return filter_empty_wfs, subt_raw_wfs_filt, all_peaks
+
+def find_wfs_above_thr(wfs, thr):
+    indices_above_thr = [idx for idx, wf in enumerate(wfs) if len(wf[wf>thr]) > 0]
+    return np.array(indices_above_thr)
+
+def get_saturating_evts_using_pmt_signal(RawTree, pmt_channel=12, pmt_thr=1000):
+    ## Get saturating events using PMT info
+    pmt_raw_wfs     = np.array(RawTree[f'chan{pmt_channel}/rdigi'].array())
+    pmt_cwfs        = np.array([blr.pmt_deconvolver(wf) for wf in pmt_raw_wfs])
+    saturating_evts = find_wfs_above_thr(pmt_cwfs, thr=pmt_thr)
+    saturating_evts = list(filter(find_wfs_above_thr, pmt_cwfs))
+    return saturating_evts
+
+def remove_waveforms_by_indices(waveforms, indices_to_remove):
+    filtered_waveforms = np.delete(waveforms, indices_to_remove, axis=0)
+    return filtered_waveforms
+
+def get_peaks_peakutils(waveform):
+    return peakutils.indexes(waveform, thres=0.35, min_dist=100)
+
+def get_peaks_using_peakutils(RawTree, channel, sipm_thr=50, pmt_thr=1000, peak_range=(650,850)):
     all_raw_wfs       = np.array(RawTree[f'chan{channel}/rdigi'].array())
-    subt_raw_wfs      = list(map(subtract_baseline, all_raw_wfs))
-    zs_raw_wfs        = noise_suppression(subt_raw_wfs, threshold=sipm_thr)
-    filter_empty_wfs  = zs_raw_wfs[np.any(zs_raw_wfs != 0, axis=1)]
-    subt_raw_wfs_filt = np.array(subt_raw_wfs)[np.any(zs_raw_wfs != 0, axis=1)]
-    all_peaks         = list(map(get_peaks_peakutils, filter_empty_wfs))
-    return filter_empty_wfs, subt_raw_wfs_filt, all_peaks
+    
+    ## Subtract baseline
+    subt_raw_wfs      = list(map(pf.subtract_baseline, all_raw_wfs))
+    
+    ## Get and remove saturated events from PMTs
+    saturated_evts    = get_saturating_evts_using_pmt_signal(RawTree, pmt_thr=pmt_thr)
+    filt_wfs          = remove_waveforms_by_indices(subt_raw_wfs, saturated_evts)
+    
+    ## Zero suppression
+    zs_raw_wfs        = noise_suppression(filt_wfs, threshold=sipm_thr)
+    
+    ## Remove events with no signal in the ROI
+    empty_evts        = np.array([idx for idx, zwf in enumerate(zs_raw_wfs) if np.sum(zwf[peak_range[0]:peak_range[1]])==0])
+    filter_empty_zwfs = remove_waveforms_by_indices(zs_raw_wfs, empty_evts)
+    subt_raw_wfs_filt = remove_waveforms_by_indices(filt_wfs,   empty_evts)
+    
+    ## Get the peaks found in the ROI
+    all_peaks         = list(map(get_peaks_peakutils, filter_empty_zwfs))
+    return filter_empty_zwfs, subt_raw_wfs_filt, all_peaks
 
 def height_of_peaks(waveforms, peaks):
     all_heights = np.concatenate(list(map(peak_height, waveforms, peaks)))
     return all_heights
 
 def area_of_peaks(waveforms, peaks):
+
     all_areas = np.concatenate(list(map(integrate_peaks, waveforms, peaks)))
     return all_areas
 
