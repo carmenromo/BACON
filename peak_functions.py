@@ -1,12 +1,12 @@
 
 import argparse
-import uproot
 import numpy as np
 
 from scipy import stats as st
-import scipy
 
 import peakutils
+
+import blr_functions as blr
 
 def parse_args(args):
     parser = argparse.ArgumentParser()
@@ -112,7 +112,6 @@ def get_saturating_evts_using_pmt_signal(RawTree, pmt_channel=12, pmt_thr=1000):
     pmt_raw_wfs     = np.array(RawTree[f'chan{pmt_channel}/rdigi'].array())
     pmt_cwfs        = np.array([blr.pmt_deconvolver(wf) for wf in pmt_raw_wfs])
     saturating_evts = find_wfs_above_thr(pmt_cwfs, thr=pmt_thr)
-    saturating_evts = list(filter(find_wfs_above_thr, pmt_cwfs))
     return saturating_evts
 
 def remove_waveforms_by_indices(waveforms, indices_to_remove):
@@ -126,7 +125,7 @@ def get_peaks_using_peakutils(RawTree, channel, sipm_thr=50, pmt_thr=1000, peak_
     all_raw_wfs       = np.array(RawTree[f'chan{channel}/rdigi'].array())
     
     ## Subtract baseline
-    subt_raw_wfs      = list(map(pf.subtract_baseline, all_raw_wfs))
+    subt_raw_wfs      = list(map(subtract_baseline, all_raw_wfs))
     
     ## Get and remove saturated events from PMTs
     saturated_evts    = get_saturating_evts_using_pmt_signal(RawTree, pmt_thr=pmt_thr)
