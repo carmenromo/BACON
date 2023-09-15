@@ -24,10 +24,20 @@ filename = f"{in_path}/{file_name}.root"
 infile   = uproot.open(filename)
 RawTree  = infile['RawTree']
 
-outfile = f"{out_path}/BACoN_sig_processing_peak_height_and_area_{file_name}"
+cal = False
+
+if cal:
+    peak_range = (650,850)
+    no_cal_str = ""
+else:
+    peak_range = (0, np.inf)
+    no_cal_str = "no_cal"
+
+outfile = f"{out_path}/BACoN_sig_processing_peak_height_and_area_{no_cal_str}_{file_name}"
 
 sipm_thr = 50 #ADCs
 peak_sep = 10
+
 
 for channel in range(total_SiPMs):
     print(channel)
@@ -35,7 +45,7 @@ for channel in range(total_SiPMs):
     if channel in dead_SiPMs:
         continue
     try:
-        zs_wfs, subt_wfs_filt, all_peaks = pf.get_peaks_using_peakutils(RawTree, channel, sipm_thr=sipm_thr)
+        zs_wfs, subt_wfs_filt, all_peaks = pf.get_peaks_using_peakutils(RawTree, channel, sipm_thr=sipm_thr, peak_range=peak_range)
         heights                          = pf.height_of_peaks(subt_wfs_filt, all_peaks)
         areas                            = pf.area_of_peaks(  subt_wfs_filt, all_peaks)
         areas_zs                         = pf.area_zs(zs_wfs, subt_wfs_filt, peak_sep=peak_sep)
