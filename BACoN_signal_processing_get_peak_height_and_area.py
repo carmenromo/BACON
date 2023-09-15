@@ -24,20 +24,12 @@ filename = f"{in_path}/{file_name}.root"
 infile   = uproot.open(filename)
 RawTree  = infile['RawTree']
 
-cal = False
+peak_range = (650,850)
 
-if cal:
-    peak_range = (650,850)
-    no_cal_str = ""
-else:
-    peak_range = (0, np.inf)
-    no_cal_str = "no_cal"
-
-outfile = f"{out_path}/BACoN_sig_processing_peak_height_and_area_{no_cal_str}_{file_name}"
+outfile = f"{out_path}/BACoN_sig_processing_peak_height_and_area_{file_name}"
 
 sipm_thr = 50 #ADCs
 peak_sep = 10
-
 
 for channel in range(total_SiPMs):
     print(channel)
