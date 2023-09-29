@@ -15,16 +15,23 @@ def parse_args(args):
     parser.add_argument('out_path' ,  help = "output files path"  )
     return parser.parse_args()
 
-
-def subtract_baseline(wfs, mode=True):
+def compute_baseline(wfs, mode=True):
     """
-    Subtract the baseline to all waveforms in the input
+    Compute the baseline to all waveforms in the input
     with a specific algorithm (mode or mean).
     """
     if mode:
         baseline = st.mode(wfs, keepdims=False).mode.astype(np.float32)
     else:
         baseline = np.mean(wfs)
+    return baseline
+
+def subtract_baseline(wfs, mode=True):
+    """
+    Subtract the baseline to all waveforms in the input
+    with a specific algorithm (mode or mean).
+    """
+    baseline = compute_baseline(wfs, mode=mode)
     return wfs - baseline
 
 def suppress_wf(waveform, threshold):

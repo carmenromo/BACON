@@ -29,7 +29,7 @@ for channel in range(9):
         continue
     try:
         all_raw_wfs = np.array(RawTree[f'chan{channel}/rdigi'].array())
-        bsl_raw_wfs = list(map(compute_baseline, all_raw_wfs))
+        bsl_raw_wfs = list(map(pf.compute_baseline, all_raw_wfs))
         mean_baselines.append(np.mean(bsl_raw_wfs))
     except ValueError:
         continue
