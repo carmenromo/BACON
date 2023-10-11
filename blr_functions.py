@@ -11,6 +11,8 @@ coeff_blr_NEXT = np.array([0.00053015, 0.00052996, 0.00053319, 0.00052624, 0.000
 def deconvolve_signal(signal_daq,
                       coeff_clean            = 2.905447E-06,
                       coeff_blr              = 1.632411E-03,
+                      baseline_mode          = False,
+                      wf_range_bsl           = (0, None),
                       thr_trigger            =     5,
                       accum_discharge_length =  5000):
     """
@@ -20,8 +22,11 @@ def deconvolve_signal(signal_daq,
     thr_acum = thr_trigger / coeff_blr
     len_signal_daq = len(signal_daq)
 
-    # Compute baseline using the me
-    baseline = np.mean(signal_daq)
+    # Compute baseline
+    if baseline_mode:
+        baseline = st.mode(signal_daq[wf_range_bsl[0]:wf_range_bsl[1]], keepdims=False).mode.astype(np.float32)
+    else:
+        baseline = np.mean(signal_daq[wf_range_bsl[0]:wf_range_bsl[1]])
 
     # Reverse sign of signal and subtract baseline
     signal_daq_bs = baseline - signal_daq
@@ -34,7 +39,7 @@ def deconvolve_signal(signal_daq,
     # trigger line
     trigger_line = thr_trigger * noise_rms
 
-    b_cf, a_cf    = sgn.butter(1, coeff_clean, 'high', analog=False);
+    b_cf, a_cf    = sgn.butter(1, coeff_clean, 'high', analog=False)
     signal_daq_bs = sgn.lfilter(b_cf, a_cf, signal_daq_bs)
 
     signal_r = np.empty(len_signal_daq)
@@ -62,6 +67,8 @@ def deconvolve_signal(signal_daq,
 def blr_deconv_pmt(pmtrwf,
                    coeff_c,
                    coeff_blr,
+                   baseline_mode          = False,
+                   wf_range_bsl           = (0, None),
                    thr_trigger            =    5,
                    accum_discharge_length = 5000):
     """
@@ -82,16 +89,21 @@ def blr_deconv_pmt(pmtrwf,
     signal_r = deconvolve_signal(signal_i,
                                  coeff_clean            = coeff_c,
                                  coeff_blr              = coeff_blr,
+                                 baseline_mode          = baseline_mode,
+                                 wf_range_bsl           = wf_range_bsl,
                                  thr_trigger            = thr_trigger,
                                  accum_discharge_length = accum_discharge_length)
     return signal_r
 
 
-def pmt_deconvolver(rwf):
+def pmt_deconvolver(rwf,
+                    baseline_mode = False,
+                    wf_range_bsl  = (0, None),):
     coeff_c    = np.mean(coeff_c_NEXT)
     coeff_blr  = np.mean(coeff_blr_NEXT)
 
     return blr_deconv_pmt(rwf,
                           coeff_c,
-                          coeff_blr)
-    return deconv_pmt
+                          coeff_blr,
+                          baseline_mode=baseline_mode,
+                          wf_range_bsl=wf_range_bsl)
