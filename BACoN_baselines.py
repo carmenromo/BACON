@@ -19,9 +19,12 @@ RawTree  = infile['RawTree']
 
 outfile = f"{out_path}/BACoN_baselines_{file_name}"
 
-total_SiPMs    = 9
-dead_SiPMs     = [3]
-mean_baselines = []
+total_SiPMs   = 9
+dead_SiPMs    = [3]
+mean_bsl_mode = []
+mean_bsl_mean = []
+all_channels  = []
+range_wf      = (0, 700)
 
 for channel in range(9):
     print(channel)
@@ -29,20 +32,28 @@ for channel in range(9):
         continue
     try:
         all_raw_wfs = np.array(RawTree[f'chan{channel}/rdigi'].array())
-        bsl_raw_wfs = list(map(pf.compute_baseline, all_raw_wfs))
-        mean_baselines.append(np.mean(bsl_raw_wfs))
+        bsl_raw_wfs_mode = [pf.compute_baseline(wf[range_wf[0]:range_wf[1]], mode=True)  for wf in all_raw_wfs] #list(map(pf.compute_baseline, all_raw_wfs))
+        bsl_raw_wfs_mean = [pf.compute_baseline(wf[range_wf[0]:range_wf[1]], mode=False) for wf in all_raw_wfs]
+        mean_bsl_mode.append(np.mean(bsl_raw_wfs_mode))
+        mean_bsl_mean.append(np.mean(bsl_raw_wfs_mean))
+        all_channels .append(channel)
     except ValueError:
         continue
 
 pmt_channel = 12
 all_raw_wfs = np.array(RawTree[f'chan{pmt_channel}/rdigi'].array())
-bsl_raw_wfs = list(map(pf.compute_baseline, all_raw_wfs))
-mean_baselines.append(np.mean(bsl_raw_wfs))
+bsl_raw_wfs_mode = [pf.compute_baseline(wf[range_wf[0]:range_wf[1]], mode=True)  for wf in all_raw_wfs] #list(map(pf.compute_baseline, all_raw_wfs))
+bsl_raw_wfs_mean = [pf.compute_baseline(wf[range_wf[0]:range_wf[1]], mode=False) for wf in all_raw_wfs]
+mean_bsl_mode.append(np.mean(bsl_raw_wfs_mode))
+mean_bsl_mean.append(np.mean(bsl_raw_wfs_mean))
+all_channels .append(pmt_channel)
 print(pmt_channel)
 
-mean_baselines = np.array(mean_baselines)
-all_channels   = np.array([0, 1, 2, 4, 5, 6, 7, 8, 12])
+mean_bsl_mode = np.array(mean_bsl_mode)
+mean_bsl_mean = np.array(mean_bsl_mean)
+all_channels  = np.array(all_channels)
 
 np.savez(outfile, 
-         mean_baselines=mean_baselines,
-         all_channels  =all_channels)
+         mean_bsl_mode=mean_bsl_mode,
+         mean_bsl_mean=mean_bsl_mean,
+         all_channels =all_channels)
