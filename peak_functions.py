@@ -10,28 +10,32 @@ import blr_functions as blr
 
 def parse_args(args):
     parser = argparse.ArgumentParser()
-    parser.add_argument('in_path'  ,  help = "input files path"   )
-    parser.add_argument('file_name',  help = "name of input files")
-    parser.add_argument('out_path' ,  help = "output files path"  )
+    parser.add_argument('in_path'  , help = "input files path"   )
+    parser.add_argument('file_name', help = "name of input files")
+    parser.add_argument('out_path' , help = "output files path"  )
     return parser.parse_args()
 
-def compute_baseline(wfs, mode=True):
+def compute_baseline(wf, mode=True, wf_range_bsl=(0, None)):
     """
-    Compute the baseline to all waveforms in the input
-    with a specific algorithm (mode or mean).
+    Compute the baseline for a waveform in the input
+    with a specific algorithm (mode or mean) and a 
+    specific range.
     """
     if mode:
-        baseline = st.mode(wfs, keepdims=False).mode.astype(np.float32)
+        baseline = st.mode(wf[wf_range_bsl[0]:wf_range_bsl[1]], keepdims=False).mode.astype(np.float32)
     else:
-        baseline = np.mean(wfs)
+        baseline = np.mean(wf[wf_range_bsl[0]:wf_range_bsl[1]])
     return baseline
 
-def subtract_baseline(wfs, mode=True):
+def subtract_baseline(wfs, mode=True, wf_range_bsl=(0, None)):
     """
-    Subtract the baseline to all waveforms in the input
+    Subtract the baseline to one or multiple waveforms in the input
     with a specific algorithm (mode or mean).
     """
-    baseline = compute_baseline(wfs, mode=mode)
+    if len(wfs.shape)==1: ## Only one waveform
+        baseline = compute_baseline(wfs, mode=mode, wf_range_bsl=wf_range_bsl)
+    elif len(wfs.shape)==2: ## Multiple wfs
+        baseline = np.mean([compute_baseline(wf, mode=mode, wf_range_bsl=wf_range_bsl) for wf in wfs])
     return wfs - baseline
 
 def suppress_wf(waveform, threshold):
@@ -117,7 +121,7 @@ def find_wfs_above_thr(wfs, thr):
 def get_saturating_evts_using_pmt_signal(RawTree, num_wfs=None, pmt_channel=12, pmt_thr=1000):
     ## Get saturating events using PMT info
     pmt_raw_wfs     = np.array(RawTree[f'chan{pmt_channel}/rdigi'].array())[:num_wfs]
-    pmt_cwfs        = np.array([blr.pmt_deconvolver(wf) for wf in pmt_raw_wfs])
+    pmt_cwfs        = np.array([blr.pmt_deconvolver(wf, wf_range_bsl=(0, 700)) for wf in pmt_raw_wfs])
     saturating_evts = find_wfs_above_thr(pmt_cwfs, thr=pmt_thr)
     return saturating_evts
 
