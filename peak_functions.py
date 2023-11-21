@@ -156,6 +156,24 @@ def get_peaks_using_peakutils(RawTree, channel, num_wfs=None, sipm_thr=50, pmt_t
     all_peaks         = list(map(get_peaks_peakutils, filter_empty_zwfs))
     return filter_empty_zwfs, subt_raw_wfs_filt, all_peaks
 
+def get_peaks_using_peakutils_no_PMT(RawTree, channel, num_wfs=None, sipm_thr=50, peak_range=(650,850)):
+    all_raw_wfs  = np.array(RawTree[f'chan{channel}/rdigi'].array())[:num_wfs]
+
+    ## Subtract baseline
+    subt_raw_wfs = list(map(subtract_baseline, all_raw_wfs))
+
+    ## Zero suppression
+    zs_raw_wfs   = noise_suppression(subt_raw_wfs, threshold=sipm_thr)
+
+    ## Remove events with no signal in the ROI
+    empty_evts        = np.array([idx for idx, zwf in enumerate(zs_raw_wfs) if np.sum(zwf[peak_range[0]:peak_range[1]])==0])
+    filter_empty_zwfs = remove_waveforms_by_indices(zs_raw_wfs,   empty_evts)
+    subt_raw_wfs_filt = remove_waveforms_by_indices(subt_raw_wfs, empty_evts)
+
+    ## Get the peaks found in the ROI
+    all_peaks         = list(map(get_peaks_peakutils, filter_empty_zwfs))
+    return filter_empty_zwfs, subt_raw_wfs_filt, all_peaks
+
 def height_of_peaks(waveforms, peaks):
     all_heights = np.concatenate(list(map(peak_height, waveforms, peaks)))
     return all_heights

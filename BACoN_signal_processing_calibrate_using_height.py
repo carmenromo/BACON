@@ -35,7 +35,7 @@ for channel in range(total_SiPMs):
     if channel in dead_SiPMs:
         continue
     try:
-        _, subt_wfs_filt, all_peaks = pf.get_peaks_using_peakutils(RawTree, channel, sipm_thr=sipm_thr, peak_range=peak_range)
+        _, subt_wfs_filt, all_peaks = pf.get_peaks_using_peakutils_no_PMT(RawTree, channel, sipm_thr=sipm_thr, peak_range=peak_range)
         heights                     = pf.height_of_peaks(subt_wfs_filt, all_peaks)
     except ValueError:
         continue
