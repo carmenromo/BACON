@@ -1,10 +1,14 @@
 
 import sys
 import uproot
+import time
 
 import numpy as np
 
 import peak_functions as pf
+import blr_functions  as blr
+
+start_time = time.time()
 
 arguments = pf.parse_args(sys.argv)
 in_path   = arguments.in_path
@@ -72,3 +76,7 @@ good_evts       = np.array(good_evts)
 np.savez(outfile, 
          sum_wfs_all_chs=sum_wfs_all_chs,
          good_evts=good_evts)
+
+end_time = time.time()
+execution_time = start_time - end_time
+print("Execution time:",execution_time)
