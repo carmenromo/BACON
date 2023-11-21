@@ -62,11 +62,6 @@ def flatten_list(arr):
             flattened_list.append(item)
     return flattened_list
 
-def split_in_peaks_indices(wfs, stride):
-    indices_above_zero = np.where(wfs > 0)[0]
-    where = np.where(np.diff(indices_above_zero) > stride)[0]
-    return np.split(indices_above_zero, where + 1)
-
 def split_in_peaks_vals(wfs, stride, len_peak=5):
     indices_above_zero = np.where(wfs > 0)[0]
     where = np.where(np.diff(indices_above_zero) > stride)[0]
@@ -75,13 +70,9 @@ def split_in_peaks_vals(wfs, stride, len_peak=5):
         return [wfs[peak] for peak in ind_peaks_splitted]
     else:
         return []
-
-# def get_peaks_peakutils(waveform):
-#     return peakutils.indexes(waveform, thres=0.35, min_dist=100)
     
 def peak_height(waveform, peaks):
     return np.array([waveform[peak] for peak in peaks])
-
 
 def integrate_peaks(waveform, peaks):
 
@@ -103,16 +94,6 @@ def integrate_peaks(waveform, peaks):
         peaks_indxs.append(np.array(peak_indxs))
     
     return np.array([np.sum(waveform[idx]) for idx in peaks_indxs])
-
-
-# def get_peaks_using_peakutils(RawTree, channel, sipm_thr=50):
-#     all_raw_wfs       = np.array(RawTree[f'chan{channel}/rdigi'].array())
-#     subt_raw_wfs      = list(map(subtract_baseline, all_raw_wfs))
-#     zs_raw_wfs        = noise_suppression(subt_raw_wfs, threshold=sipm_thr)
-#     filter_empty_wfs  = zs_raw_wfs[np.any(zs_raw_wfs != 0, axis=1)]
-#     subt_raw_wfs_filt = np.array(subt_raw_wfs)[np.any(zs_raw_wfs != 0, axis=1)]
-#     all_peaks         = list(map(get_peaks_peakutils, filter_empty_wfs))
-#     return filter_empty_wfs, subt_raw_wfs_filt, all_peaks
 
 def find_wfs_above_thr(wfs, thr):
     indices_above_thr = [idx for idx, wf in enumerate(wfs) if len(wf[wf>thr]) > 0]
@@ -179,7 +160,6 @@ def height_of_peaks(waveforms, peaks):
     return all_heights
 
 def area_of_peaks(waveforms, peaks):
-
     all_areas = np.concatenate(list(map(integrate_peaks, waveforms, peaks)))
     return all_areas
 
