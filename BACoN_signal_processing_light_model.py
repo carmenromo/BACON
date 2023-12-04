@@ -15,7 +15,7 @@ in_path   = arguments.in_path
 file_name = arguments.file_name
 out_path  = arguments.out_path
 
-total_SiPMs = 9
+total_SiPMs = 12
 dead_SiPMs  = []
 
 sum_wfs_all_chs = [[] for i in range(total_SiPMs)]
@@ -78,5 +78,5 @@ np.savez(outfile,
          good_evts=good_evts)
 
 end_time = time.time()
-execution_time = start_time - end_time
-print("Execution time:",execution_time)
+execution_time = end_time - start_time
+print("Execution time: ", execution_time)

@@ -2,7 +2,8 @@
 import argparse
 import numpy as np
 
-from scipy import stats as st
+from scipy     import stats   as st
+from functools import partial
 
 import peakutils
 
@@ -137,11 +138,16 @@ def get_peaks_using_peakutils(RawTree, channel, num_wfs=None, sipm_thr=50, pmt_t
     all_peaks         = list(map(get_peaks_peakutils, filter_empty_zwfs))
     return filter_empty_zwfs, subt_raw_wfs_filt, all_peaks
 
-def get_peaks_using_peakutils_no_PMT(RawTree, channel, num_wfs=None, sipm_thr=50, peak_range=(650,850)):
+def get_peaks_using_peakutils_no_PMT(RawTree, channel, num_wfs=None, sipm_thr=50, peak_range=(650,850), wf_range_bsl=(0, None)):
     all_raw_wfs  = np.array(RawTree[f'chan{channel}/rdigi'].array())[:num_wfs]
 
+    if channel in [9, 10, 11]: #trigger SiPMs
+        all_raw_wfs = np.array([blr.pmt_deconvolver(wf, wf_range_bsl=wf_range_bsl) for wf in all_raw_wfs])
+
     ## Subtract baseline
-    subt_raw_wfs = list(map(subtract_baseline, all_raw_wfs))
+    partial_subtract_baseline = partial(subtract_baseline, wf_range_bsl=wf_range_bsl)
+    subt_raw_wfs = list(map(partial_subtract_baseline, all_raw_wfs))
+    #subt_raw_wfs = list(map(subtract_baseline, all_raw_wfs))
 
     ## Zero suppression
     zs_raw_wfs   = noise_suppression(subt_raw_wfs, threshold=sipm_thr)
