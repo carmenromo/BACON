@@ -24,7 +24,7 @@ RawTree  = infile['RawTree']
 peak_range   = (650,850)
 max_smpl_bsl = 650
 
-outfile = f"{out_path}/BACoN_sig_processing_cal_using_height_{file_name}"
+outfile = f"{out_path}/BACoN_sig_processing_cal_using_height_trigger_SiPMs_{file_name}"
 
 sipm_thr = 50 #ADCs
 peak_sep = 10
