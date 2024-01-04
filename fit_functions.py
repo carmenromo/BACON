@@ -81,8 +81,8 @@ def string_fit(f, units='ADCs', ndec=2, print_chi2=True):
     else:
         return f'{mu_str}'+'\n'+f'{sig_str}'
     
-def gaussian_fit_IC(data, bins=100, prange=(-50, 150), ampl=100, mean=0, sigma=10, frange=(-50, 50), title='', ndec=2, print_chi2=True):
-    fig = plt.figure(figsize=(8,5))
+def gaussian_fit_IC(data, bins=100, prange=(-50, 150), ampl=100, mean=0, sigma=10, frange=(-50, 50), title='', ndec=2, print_chi2=True, figsize=(8,5)):
+    fig = plt.figure(figsize=figsize)
     y, x, _ = plt.hist(data, bins=bins, alpha=0.5, range=prange, histtype='step', linewidth=1.5)
     f = fit(gauss, shift_to_bin_centers(x), y, (ampl,mean,sigma), fit_range=frange, sigma=np.sqrt(y))
 

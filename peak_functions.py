@@ -16,6 +16,9 @@ def parse_args(args):
     parser.add_argument('out_path' , help = "output files path"  )
     return parser.parse_args()
 
+def wfs_from_rawtree(RawTree, channel):
+    return np.array(RawTree[f'chan{channel}/rdigi'].array())
+
 def compute_baseline(wf, mode=True, wf_range_bsl=(0, None)):
     """
     Compute the baseline for a waveform in the input
@@ -102,7 +105,7 @@ def find_wfs_above_thr(wfs, thr):
 
 def get_saturating_evts_using_pmt_signal(RawTree, num_wfs=None, pmt_channel=12, pmt_thr=1000):
     ## Get saturating events using PMT info
-    pmt_raw_wfs     = np.array(RawTree[f'chan{pmt_channel}/rdigi'].array())[:num_wfs]
+    pmt_raw_wfs     = wfs_from_rawtree(RawTree, pmt_channel)[:num_wfs]
     pmt_cwfs        = np.array([blr.pmt_deconvolver(wf, wf_range_bsl=(0, 700)) for wf in pmt_raw_wfs])
     saturating_evts = find_wfs_above_thr(pmt_cwfs, thr=pmt_thr)
     return saturating_evts
@@ -117,7 +120,7 @@ def get_peaks_peakutils(waveform):
     return peakutils.indexes(waveform, thres=0.35, min_dist=100)
 
 def get_peaks_using_peakutils(RawTree, channel, num_wfs=None, sipm_thr=50, pmt_thr=1000, peak_range=(650,850)):
-    all_raw_wfs       = np.array(RawTree[f'chan{channel}/rdigi'].array())[:num_wfs]
+    all_raw_wfs       = wfs_from_rawtree(RawTree, channel)[:num_wfs]
     
     ## Subtract baseline
     subt_raw_wfs      = list(map(subtract_baseline, all_raw_wfs))
@@ -139,7 +142,8 @@ def get_peaks_using_peakutils(RawTree, channel, num_wfs=None, sipm_thr=50, pmt_t
     return filter_empty_zwfs, subt_raw_wfs_filt, all_peaks
 
 def get_peaks_using_peakutils_no_PMT(RawTree, channel, num_wfs=None, sipm_thr=50, peak_range=(650,850), wf_range_bsl=(0, None)):
-    all_raw_wfs  = np.array(RawTree[f'chan{channel}/rdigi'].array())[:num_wfs]
+    all_raw_wfs = wfs_from_rawtree(RawTree, channel)[:num_wfs]
+    #all_raw_wfs = np.array([wf for wf in all_raw_wfs if np.std(wf) > 15]) #Way of removing the baseline wfs
 
     if channel in [9, 10, 11]: #trigger SiPMs
         all_raw_wfs = np.array([blr.pmt_deconvolver(wf, wf_range_bsl=wf_range_bsl) for wf in all_raw_wfs])
