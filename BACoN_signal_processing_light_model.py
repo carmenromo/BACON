@@ -32,16 +32,13 @@ pretrigg_range = (0, 600)
 max_smpl_bsl   = 650
 sipm_thr       = 50 #ADCs
 
-def wfs_from_rawtree(RawTree, channel):
-    return np.array(RawTree[f'chan{channel}/rdigi'].array())
-
 ##Trigger SiPMs
 trigger_chs     = [9, 10, 11]
 trigg_cwfs_dict = {ch: np.array([blr.pmt_deconvolver(wf, wf_range_bsl=(0, max_smpl_bsl))
-                                 for wf in wfs_from_rawtree(RawTree, ch)])
+                                 for wf in pf.wfs_from_rawtree(RawTree, ch)])
                                  for ch in trigger_chs}
 
-subt_wfs_dict = {ch: pf.subtract_baseline(wfs_from_rawtree(RawTree, ch),
+subt_wfs_dict = {ch: pf.subtract_baseline(pf.wfs_from_rawtree(RawTree, ch),
                                           mode=True,
                                           wf_range_bsl=(0, max_smpl_bsl))
                  for ch in range(9)}
