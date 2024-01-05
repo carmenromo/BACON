@@ -42,6 +42,7 @@ filt_wfs_dict = {ch: np.array([(evt, wf)
 
 #filt_evts      = np.unique(np.concatenate(np.array([filt_wfs_dict[ch].T[0] for ch in normal_chs])))
 filt_evts_dict = {ch: filt_wfs_dict[ch].T[0]
+                  if len(filt_wfs_dict[ch])!=0 else []
                   for ch in normal_chs}
 
 ## Baseline subtraction
@@ -49,17 +50,20 @@ subt_wfs_dict = {ch: np.array([pf.subtract_baseline(fwf,
                                           mode=True,
                                           wf_range_bsl=(0, max_smpl_bsl))
                                           for _, fwf in filt_wfs_dict[ch]])
+                 if len(filt_wfs_dict[ch])!=0 else []
                  for ch in normal_chs}
 
 ## Apply the Savitzky-Golay filter to smooth the wf
 sg_filt_swfs_dict = {ch: savgol_filter(subt_wfs_dict[ch],
                                        window_length=sg_filter_window,
                                        polyorder=sg_filter_polyorder)
+                     if len(subt_wfs_dict[ch]) != 0 else []
                      for ch in normal_chs}
 
 ## Noise suppression
 zs_sg_filt_swfs_dict = {ch: pf.noise_suppression(sg_filt_swfs_dict[ch],
                                                  threshold=thr_ADC)
+                        if len(sg_filt_swfs_dict[ch]) != 0 else []
                         for ch in normal_chs}
 
 ## Get peaks above thr_ADC
