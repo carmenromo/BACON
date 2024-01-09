@@ -97,10 +97,17 @@ height_peaks_ch_trigg_dict = {ch: np.array([pf.peak_height(wf, idx_peaks_ch_trig
                                             for i,wf in enumerate(zs_sg_filt_trigg_dict[ch])], dtype=object)
                               for ch in trigger_chs}
 
+height_peaks_deconv_ch_trigg_dict = {ch: np.array([pf.peak_height_deconv(wf,
+                                                                        idx_peaks_ch_trigg_dict   [ch][i],
+                                                                        height_peaks_ch_trigg_dict[ch][i].copy())
+                                     for i, wf in enumerate(zs_sg_filt_trigg_dict[ch])], dtype=object)
+                                     for ch in trigger_chs}
+
 
 np.savez(outfile,
          filt_evts_dict=filt_evts_dict,
          idx_peaks_ch_dict=idx_peaks_ch_dict,
          height_peaks_ch_dict=height_peaks_ch_dict,
          idx_peaks_ch_trigg_dict=idx_peaks_ch_trigg_dict,
-         height_peaks_ch_trigg_dict=height_peaks_ch_trigg_dict)
+         height_peaks_ch_trigg_dict=height_peaks_ch_trigg_dict,
+         height_peaks_deconv_ch_trigg_dict=height_peaks_deconv_ch_trigg_dict)
