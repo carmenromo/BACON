@@ -77,9 +77,9 @@ height_peaks_ch_dict = {ch: np.array([pf.peak_height(wf, idx_peaks_ch_dict[ch][i
                                       for i,wf in enumerate(zs_sg_filt_swfs_dict[ch])], dtype=object)
                         for ch in normal_chs}
 
-height_peaks_deconv_ch_dict = {ch: np.array([peak_height_deconv(wf,
-                                                                idx_peaks_ch_dict   [ch][i],
-                                                                height_peaks_ch_dict[ch][i].copy())
+height_peaks_deconv_ch_dict = {ch: np.array([pf.peak_height_deconv(wf,
+                                                                   idx_peaks_ch_dict   [ch][i],
+                                                                   height_peaks_ch_dict[ch][i].copy())
                                for i, wf in enumerate(zs_sg_filt_swfs_dict[ch])], dtype=object)
                                for ch in normal_chs}
 
