@@ -7,6 +7,8 @@ import numpy as np
 import peak_functions as pf
 import blr_functions  as blr
 
+from functools import partial
+
 from scipy.signal import savgol_filter
 
 
@@ -21,14 +23,14 @@ filename = f"{in_path}/{file_name}.root"
 infile   = uproot.open(filename)
 RawTree  = infile['RawTree']
 
-outfile = f"{out_path}/BACoN_hits_and_times_{file_name}"
-
 ## Parameters
 max_smpl_bsl        = 650
 std_bsl_thr         = 15
 sg_filter_window    = 50
 sg_filter_polyorder = 3
-thr_ADC             = 20 #ths for the noise suppression and peak finder after SG filter
+thr_ADC             = 50 #ths for the noise suppression and peak finder after SG filter
+
+outfile = f"{out_path}/BACoN_hits_and_times_{file_name}_thr{thr_ADC}"
 
 normal_chs  = range(9)
 trigger_chs = [9, 10, 11]
@@ -67,7 +69,8 @@ zs_sg_filt_swfs_dict = {ch: pf.noise_suppression(sg_filt_swfs_dict[ch],
                         for ch in normal_chs}
 
 ## Get peaks above thr_ADC
-idx_peaks_ch_dict = {ch: np.array(list(map(pf.get_peaks_peakutils, zs_sg_filt_swfs_dict[ch])), dtype=object)
+partial_get_peaks_peakutils = partial(pf.get_peaks_peakutils, thres=thr_ADC, min_dist=100, thres_abs=True)
+idx_peaks_ch_dict = {ch: np.array(list(map(partial_get_peaks_peakutils, zs_sg_filt_swfs_dict[ch])), dtype=object)
                      for ch in normal_chs}
 
 height_peaks_ch_dict = {ch: np.array([pf.peak_height(wf, idx_peaks_ch_dict[ch][i])
@@ -96,7 +99,7 @@ zs_sg_filt_trigg_dict = {ch: pf.noise_suppression(sg_filt_trigg_dict[ch],
                                                   threshold=thr_ADC)
                          for ch in trigger_chs}
 
-idx_peaks_ch_trigg_dict = {ch: np.array(list(map(pf.get_peaks_peakutils, zs_sg_filt_trigg_dict[ch])), dtype=object)
+idx_peaks_ch_trigg_dict = {ch: np.array(list(map(partial_get_peaks_peakutils, zs_sg_filt_trigg_dict[ch])), dtype=object)
                            for ch in trigger_chs}
 
 height_peaks_ch_trigg_dict = {ch: np.array([pf.peak_height(wf, idx_peaks_ch_trigg_dict[ch][i])

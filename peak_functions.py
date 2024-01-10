@@ -125,8 +125,8 @@ def remove_waveforms_by_indices(waveforms, indices_to_remove):
     filtered_waveforms = np.delete(waveforms, indices_to_remove, axis=0)
     return filtered_waveforms
 
-def get_peaks_peakutils(waveform):
-    return peakutils.indexes(waveform, thres=0.35, min_dist=100)
+def get_peaks_peakutils(waveform, thres=0.35, min_dist=100, thres_abs=False):
+    return peakutils.indexes(waveform, thres=thres, min_dist=min_dist, thres_abs=thres_abs)
 
 def get_peaks_using_peakutils(RawTree, channel, num_wfs=None, sipm_thr=50, pmt_thr=1000, peak_range=(650,850)):
     all_raw_wfs       = wfs_from_rawtree(RawTree, channel)[:num_wfs]
