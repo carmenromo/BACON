@@ -29,8 +29,9 @@ std_bsl_thr         = 15
 sg_filter_window    = 50
 sg_filter_polyorder = 3
 thr_ADC             = 50 #ths for the noise suppression and peak finder after SG filter
+min_dist            = 50 #min distance between peaks for peakutils
 
-outfile = f"{out_path}/BACoN_hits_and_times_thr{thr_ADC}_{file_name}"
+outfile = f"{out_path}/BACoN_hits_and_times_thr{thr_ADC}_md{min_dist}_{file_name}"
 
 normal_chs  = range(9)
 trigger_chs = [9, 10, 11]
@@ -69,7 +70,7 @@ zs_sg_filt_swfs_dict = {ch: pf.noise_suppression(sg_filt_swfs_dict[ch],
                         for ch in normal_chs}
 
 ## Get peaks above thr_ADC
-partial_get_peaks_peakutils = partial(pf.get_peaks_peakutils, thres=thr_ADC, min_dist=100, thres_abs=True)
+partial_get_peaks_peakutils = partial(pf.get_peaks_peakutils, thres=thr_ADC, min_dist=min_dist, thres_abs=True)
 idx_peaks_ch_dict = {ch: np.array(list(map(partial_get_peaks_peakutils, zs_sg_filt_swfs_dict[ch])), dtype=object)
                      for ch in normal_chs}
 
