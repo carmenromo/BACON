@@ -30,7 +30,7 @@ sg_filter_window    = 50
 sg_filter_polyorder = 3
 thr_ADC             = 50 #ths for the noise suppression and peak finder after SG filter
 
-outfile = f"{out_path}/BACoN_hits_and_times_{file_name}_thr{thr_ADC}"
+outfile = f"{out_path}/BACoN_hits_and_times_thr{thr_ADC}_{file_name}"
 
 normal_chs  = range(9)
 trigger_chs = [9, 10, 11]
@@ -73,7 +73,15 @@ partial_get_peaks_peakutils = partial(pf.get_peaks_peakutils, thres=thr_ADC, min
 idx_peaks_ch_dict = {ch: np.array(list(map(partial_get_peaks_peakutils, zs_sg_filt_swfs_dict[ch])), dtype=object)
                      for ch in normal_chs}
 
-height_peaks_ch_dict = {ch: np.array([pf.peak_height(wf, idx_peaks_ch_dict[ch][i])
+idx_peaks_thr_ch_dict = {ch: np.array([pf.get_values_thr_from_zswf(wf, idx_peaks_ch_dict[ch][i])
+                                      for i,wf in enumerate(zs_sg_filt_swfs_dict[ch])], dtype=object)
+                         for ch in normal_chs}
+
+height_peaks_ch_dict = {ch: np.array([wf[idx_peaks_ch_dict[ch][i]]
+                                      for i,wf in enumerate(subt_wfs_dict[ch])], dtype=object)
+                        for ch in normal_chs}
+
+height_peaks_sg_ch_dict = {ch: np.array([pf.peak_height(wf, idx_peaks_ch_dict[ch][i])
                                       for i,wf in enumerate(zs_sg_filt_swfs_dict[ch])], dtype=object)
                         for ch in normal_chs}
 
@@ -102,9 +110,17 @@ zs_sg_filt_trigg_dict = {ch: pf.noise_suppression(sg_filt_trigg_dict[ch],
 idx_peaks_ch_trigg_dict = {ch: np.array(list(map(partial_get_peaks_peakutils, zs_sg_filt_trigg_dict[ch])), dtype=object)
                            for ch in trigger_chs}
 
-height_peaks_ch_trigg_dict = {ch: np.array([pf.peak_height(wf, idx_peaks_ch_trigg_dict[ch][i])
+idx_peaks_thr_ch_trigg_dict = {ch: np.array([pf.get_values_thr_from_zswf(wf, idx_peaks_ch_trigg_dict[ch][i])
                                             for i,wf in enumerate(zs_sg_filt_trigg_dict[ch])], dtype=object)
+                               for ch in trigger_chs}
+
+height_peaks_ch_trigg_dict = {ch: np.array([wf[idx_peaks_ch_trigg_dict[ch][i]]
+                                            for i,wf in enumerate(trigg_cwfs_dict[ch])], dtype=object)
                               for ch in trigger_chs}
+
+height_peaks_sg_ch_trigg_dict = {ch: np.array([pf.peak_height(wf, idx_peaks_ch_trigg_dict[ch][i])
+                                               for i,wf in enumerate(zs_sg_filt_trigg_dict[ch])], dtype=object)
+                                 for ch in trigger_chs}
 
 height_peaks_deconv_ch_trigg_dict = {ch: np.array([pf.peak_height_deconv(wf,
                                                                         idx_peaks_ch_trigg_dict   [ch][i],
@@ -116,6 +132,7 @@ height_peaks_deconv_ch_trigg_dict = {ch: np.array([pf.peak_height_deconv(wf,
 np.savez(outfile,
          filt_evts_dict=filt_evts_dict,
          idx_peaks_ch_dict=idx_peaks_ch_dict,
+         idx_peaks_thr_ch_dict=idx_peaks_thr_ch_dict,
          height_peaks_ch_dict=height_peaks_ch_dict,
          height_peaks_deconv_ch_dict=height_peaks_deconv_ch_dict,
          idx_peaks_ch_trigg_dict=idx_peaks_ch_trigg_dict,

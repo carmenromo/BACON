@@ -186,3 +186,17 @@ def area_zs(zs_waveforms, waveforms, peak_sep=10):
     peaks_splitted_vals = list(map(split_in_peaks_vals, zs_waveforms, np.tile(peak_sep, len(waveforms))))
     all_areas           = np.array(list(map(sum, flatten_list(peaks_splitted_vals))))
     return all_areas
+
+def get_values_thr_from_zswf(waveform, idx_peaks):
+    ## The wfs should be zeros except for the peaks
+    vals_thr = np.ones(len(idx_peaks))
+    for i, peak in enumerate(idx_peaks):
+        if i==0:
+            vals_thr[i] = np.where(waveform[:peak]>0)[0][0]
+        else:
+            zeros_in_range = np.where(waveform[idx_peaks[i-1]:peak]==0)[0]
+            if len(zeros_in_range)==0:
+                vals_thr[i] = np.argmin(waveform[idx_peaks[i-1]:peak]) + idx_peaks[i-1]
+            else:
+                vals_thr[i] = idx_peaks[i-1] + zeros_in_range[-1] + 1
+    return vals_thr
