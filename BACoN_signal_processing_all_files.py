@@ -21,8 +21,10 @@ for file_name in np.sort(all_files):
     print('--------------------------------------------')
 
     try:
-        subprocess.call(['python', script, files_dir, filename, out_path])
-    except FileNotFoundError:
         subprocess.call(['python3', script, files_dir, filename, out_path])
+    except FileNotFoundError:
+        "FileNotFoundError"
+        continue
     except uproot.exceptions.KeyInFileError:
+        "uproot.exceptions.KeyInFileError"
         continue
