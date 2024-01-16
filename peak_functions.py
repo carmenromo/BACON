@@ -192,7 +192,10 @@ def get_values_thr_from_zswf(waveform, idx_peaks):
     vals_thr = np.ones(len(idx_peaks))
     for i, peak in enumerate(idx_peaks):
         if i==0:
-            vals_thr[i] = np.where(waveform[:peak]>0)[0][0]
+            if len(np.where(waveform[:peak]>0)[0])==0:
+                vals_thr[i] = peak
+            else:
+                vals_thr[i] = np.where(waveform[:peak]>0)[0][0]
         else:
             zeros_in_range = np.where(waveform[idx_peaks[i-1]:peak]==0)[0]
             if len(zeros_in_range)==0:
