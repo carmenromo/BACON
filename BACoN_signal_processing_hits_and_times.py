@@ -78,9 +78,9 @@ idx_peaks_thr_ch_dict = {ch: np.array([pf.get_values_thr_from_zswf(wf, idx_peaks
                                       for i,wf in enumerate(zs_sg_filt_swfs_dict[ch])], dtype=object)
                          for ch in normal_chs}
 
-height_peaks_ch_dict = {ch: np.array([wf[idx_peaks_ch_dict[ch][i]]
-                                      for i,wf in enumerate(subt_wfs_dict[ch])], dtype=object)
-                        for ch in normal_chs}
+height_peaks_ch_dict = {ch: np.array([wf[idx_peaks_ch_dict[ch][i]] if len(idx_peaks_ch_dict[ch][i])!=0 else np.array([0])
+                                            for i, wf in enumerate(subt_wfs_dict[ch])], dtype=object)
+                              for ch in normal_chs}
 
 height_peaks_sg_ch_dict = {ch: np.array([pf.peak_height(wf, idx_peaks_ch_dict[ch][i])
                                       for i,wf in enumerate(zs_sg_filt_swfs_dict[ch])], dtype=object)
@@ -115,7 +115,7 @@ idx_peaks_thr_ch_trigg_dict = {ch: np.array([pf.get_values_thr_from_zswf(wf, idx
                                             for i,wf in enumerate(zs_sg_filt_trigg_dict[ch])], dtype=object)
                                for ch in trigger_chs}
 
-height_peaks_ch_trigg_dict = {ch: np.array([wf[idx_peaks_ch_trigg_dict[ch][i]]
+height_peaks_ch_trigg_dict = {ch: np.array([wf[idx_peaks_ch_trigg_dict[ch][i]] if len(idx_peaks_ch_trigg_dict[ch][i])!=0 else np.array([0])
                                             for i,wf in enumerate(trigg_cwfs_dict[ch])], dtype=object)
                               for ch in trigger_chs}
 
