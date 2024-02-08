@@ -70,7 +70,7 @@ def f_values(f):
     fwhm, fwhm_err = sigma* 2.355, sigma_err* 2.355
     return mu, mu_err, sigma, sigma_err, fwhm, fwhm_err, f.chi2
 
-def string_fit(f, units='ADCs', ndec=2, print_chi2=True):
+def string_fit(f, units='ADC', ndec=2, print_chi2=True):
     mu, mu_err, sigma, sigma_err, fwhm, fwhm_err, chi2 = f_values(f)
     mu_str   = f'$\mu$ = {np.round(mu, ndec)} ± {np.round(mu_err, ndec)} {units}'
     sig_str  = f'$\sigma$ = {np.round(sigma, ndec)} ± {np.round(sigma_err, ndec)} {units}'
