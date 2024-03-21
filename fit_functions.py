@@ -81,31 +81,31 @@ def string_fit(f, units='ADC', ndec=2, print_chi2=True):
     else:
         return f'{mu_str}'+'\n'+f'{sig_str}'
     
-def gaussian_fit_IC(data, bins=100, prange=(-50, 150), ampl=100, mean=0, sigma=10, frange=(-50, 50), title='', ndec=2, print_chi2=True, figsize=(8,5)):
+def gaussian_fit_IC(data, bins=100, prange=(-50, 150), ampl=100, mean=0, sigma=10, frange=(-50, 50), title='', xlabel='Amplitude (ADC)', units='ADC', ndec=2, print_chi2=True, figsize=(8,5)):
     plt.figure(figsize=figsize)
     y, x, _ = plt.hist(data, bins=bins, alpha=0.5, range=prange, histtype='step', linewidth=1.5)
     f = fit(gauss, shift_to_bin_centers(x), y, (ampl,mean,sigma), fit_range=frange, sigma=np.sqrt(y))
 
     plt.plot(shift_to_bin_centers(x), gauss(shift_to_bin_centers(x), *f.values[:3]), 'r--',
-             label=string_fit(f, ndec=ndec, print_chi2=print_chi2))
+             label=string_fit(f, ndec=ndec, print_chi2=print_chi2, units=units))
     plt.errorbar(shift_to_bin_centers(x), y, yerr=np.sqrt(y), fmt='.k', elinewidth=0.5, capsize=2, capthick=1)
     plt.title(title)
-    plt.xlabel('ADCs')
+    plt.xlabel(xlabel)
     plt.ylabel('Entries/bin')
     plt.legend()
     plt.show()
     
     return f_values(f)
 
-def gaussian_fit_IC_subplot(ax, data, bins=100, prange=(-50, 150), ampl=100, mean=0, sigma=10, frange=(-50, 50), title='', ndec=2, print_chi2=True):
+def gaussian_fit_IC_subplot(ax, data, bins=100, prange=(-50, 150), ampl=100, mean=0, sigma=10, frange=(-50, 50), title='', xlabel='Amplitude (ADC)', units='ADC', ndec=2, print_chi2=True):
     y, x, _ = ax.hist(data, bins=bins, alpha=0.5, range=prange, histtype='step', linewidth=1.5)
     f = fit(gauss, shift_to_bin_centers(x), y, (ampl,mean,sigma), fit_range=frange, sigma=np.sqrt(y))
 
     ax.plot(shift_to_bin_centers(x), gauss(shift_to_bin_centers(x), *f.values[:3]), 'r--',
-             label=string_fit(f, ndec=ndec, print_chi2=print_chi2))
+             label=string_fit(f, ndec=ndec, print_chi2=print_chi2, units=units))
     ax.errorbar(shift_to_bin_centers(x), y, yerr=np.sqrt(y), fmt='.k', elinewidth=0.5, capsize=2, capthick=1)
     ax.set_title(title)
-    ax.set_xlabel('Amplitude (ADCs)')
+    ax.set_xlabel(xlabel)
     ax.set_ylabel('Entries/bin')
     ax.legend(loc='upper right', handlelength=0.5)
     
