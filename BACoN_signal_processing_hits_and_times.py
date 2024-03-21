@@ -23,6 +23,10 @@ filename = f"{in_path}/{file_name}.root"
 infile   = uproot.open(filename)
 RawTree  = infile['RawTree']
 
+"""to run this script:
+
+python3 BACoN_signal_processing_hits_and_times.py /wherever/your/files/are my_file.root /output/data/"""
+
 ## Parameters
 max_smpl_bsl        = 650
 std_bsl_thr         = 15
@@ -92,6 +96,12 @@ height_peaks_deconv_ch_dict = {ch: np.array([pf.peak_height_deconv(wf,
                                for i, wf in enumerate(zs_sg_filt_swfs_dict[ch])], dtype=object)
                                for ch in normal_chs}
 
+height_peaks_sg_deconv_ch_dict = {ch: np.array([pf.peak_height_deconv(wf,
+                                                                      idx_peaks_ch_dict      [ch][i],
+                                                                      height_peaks_sg_ch_dict[ch][i].copy())
+                               for i, wf in enumerate(zs_sg_filt_swfs_dict[ch])], dtype=object)
+                               for ch in normal_chs}
+
 
 #### TRIGGER SIPMS
 ## In the deconvolution the baseline is already subtracted from the waveform!!!
@@ -129,6 +139,12 @@ height_peaks_deconv_ch_trigg_dict = {ch: np.array([pf.peak_height_deconv(wf,
                                      for i, wf in enumerate(zs_sg_filt_trigg_dict[ch])], dtype=object)
                                      for ch in trigger_chs}
 
+height_peaks_sg_deconv_ch_trigg_dict = {ch: np.array([pf.peak_height_deconv(wf,
+                                                                            idx_peaks_ch_trigg_dict      [ch][i],
+                                                                            height_peaks_sg_ch_trigg_dict[ch][i].copy())
+                                     for i, wf in enumerate(zs_sg_filt_trigg_dict[ch])], dtype=object)
+                                     for ch in trigger_chs}
+
 
 np.savez(outfile,
          filt_evts_dict=filt_evts_dict,
@@ -137,8 +153,10 @@ np.savez(outfile,
          height_peaks_ch_dict=height_peaks_ch_dict,
          height_peaks_sg_ch_dict=height_peaks_sg_ch_dict,
          height_peaks_deconv_ch_dict=height_peaks_deconv_ch_dict,
+         height_peaks_sg_deconv_ch_dict=height_peaks_sg_deconv_ch_dict
          idx_peaks_ch_trigg_dict=idx_peaks_ch_trigg_dict,
          idx_peaks_thr_ch_trigg_dict=idx_peaks_thr_ch_trigg_dict,
          height_peaks_ch_trigg_dict=height_peaks_ch_trigg_dict,
          height_peaks_sg_ch_trigg_dict=height_peaks_sg_ch_trigg_dict,
-         height_peaks_deconv_ch_trigg_dict=height_peaks_deconv_ch_trigg_dict)
+         height_peaks_deconv_ch_trigg_dict=height_peaks_deconv_ch_trigg_dict,
+         height_peaks_sg_deconv_ch_trigg_dict=height_peaks_sg_deconv_ch_trigg_dict)
