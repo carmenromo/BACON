@@ -22,12 +22,15 @@ filename = f"{in_path}/{file_name}.root"
 infile   = uproot.open(filename)
 RawTree  = infile['RawTree']
 
-peak_range = (650,850)
+peak_range   = (650,850)
+max_smpl_bsl = 650
+sg_filter    = True
+sg_window    = 30
+sg_polyorder = 3
+sipm_thr     = 50 #ADCs
+peak_sep     = 10
 
-sipm_thr = 50 #ADCs
-peak_sep = 10
-
-outfile = f"{out_path}/BACoN_cal_using_height_dist{peak_sep}_{file_name}"
+outfile = f"{out_path}/BACoN_cal_height_sg_filter_{sg_filter}_w{sg_window}_dist{peak_sep}_{file_name}"
 
 for channel in range(total_SiPMs):
     print(channel)
@@ -35,8 +38,10 @@ for channel in range(total_SiPMs):
     if channel in dead_SiPMs:
         continue
     try:
-        _, subt_wfs_filt, all_peaks = pf.get_peaks_using_peakutils_no_PMT(RawTree, channel, sipm_thr=sipm_thr, peak_range=peak_range)
-        heights                     = pf.height_of_peaks(subt_wfs_filt, all_peaks)
+        _, subt_wfs_filt, all_peaks = pf.get_peaks_using_peakutils_no_PMT(RawTree, channel, sipm_thr=sipm_thr,
+                                                                          peak_range=peak_range, wf_range_bsl=(0, max_smpl_bsl),
+                                                                          sg_filter=sg_filter, window_length=sg_window, polyorder=sg_polyorder)
+        heights = pf.height_of_peaks(subt_wfs_filt, all_peaks)
     except ValueError:
         continue
     peak_height_all_channels [channel].append(heights)

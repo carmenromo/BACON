@@ -2,8 +2,9 @@
 import argparse
 import numpy as np
 
-from scipy     import stats   as st
-from functools import partial
+from scipy        import stats   as st
+from functools    import partial
+from scipy.signal import savgol_filter
 
 import peakutils
 
@@ -150,7 +151,7 @@ def get_peaks_using_peakutils(RawTree, channel, num_wfs=None, sipm_thr=50, pmt_t
     all_peaks         = list(map(get_peaks_peakutils, filter_empty_zwfs))
     return filter_empty_zwfs, subt_raw_wfs_filt, all_peaks
 
-def get_peaks_using_peakutils_no_PMT(RawTree, channel, num_wfs=None, sipm_thr=50, peak_range=(650,850), wf_range_bsl=(0, None)):
+def get_peaks_using_peakutils_no_PMT(RawTree, channel, num_wfs=None, sipm_thr=50, peak_range=(650,850), wf_range_bsl=(0, None), sg_filter=False, window_length=None, polyorder=None):
     all_raw_wfs = wfs_from_rawtree(RawTree, channel)[:num_wfs]
     #all_raw_wfs = np.array([wf for wf in all_raw_wfs if np.std(wf) > 15]) #Way of removing the baseline wfs
 
@@ -160,10 +161,14 @@ def get_peaks_using_peakutils_no_PMT(RawTree, channel, num_wfs=None, sipm_thr=50
     ## Subtract baseline
     partial_subtract_baseline = partial(subtract_baseline, wf_range_bsl=wf_range_bsl)
     subt_raw_wfs = list(map(partial_subtract_baseline, all_raw_wfs))
-    #subt_raw_wfs = list(map(subtract_baseline, all_raw_wfs))
+
+    if sg_filter:
+        if window_length==None or polyorder==None:
+            raise ValueError
+        subt_raw_wfs = savgol_filter(subt_raw_wfs, window_length=window_length, polyorder=polyorder)
 
     ## Zero suppression
-    zs_raw_wfs   = noise_suppression(subt_raw_wfs, threshold=sipm_thr)
+    zs_raw_wfs = noise_suppression(subt_raw_wfs, threshold=sipm_thr)
 
     ## Remove events with no signal in the ROI
     empty_evts        = np.array([idx for idx, zwf in enumerate(zs_raw_wfs) if np.sum(zwf[peak_range[0]:peak_range[1]])==0])

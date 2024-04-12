@@ -30,7 +30,7 @@ python3 BACoN_signal_processing_hits_and_times.py /wherever/your/files/are my_fi
 ## Parameters
 max_smpl_bsl        = 650
 std_bsl_thr         = 15
-sg_filter_window    = 50
+sg_filter_window    = 30
 sg_filter_polyorder = 3
 thr_ADC             = 50 #ths for the noise suppression and peak finder after SG filter
 min_dist            = 50 #min distance between peaks for peakutils

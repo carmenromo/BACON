@@ -23,17 +23,20 @@ RawTree  = infile['RawTree']
 
 peak_range   = (650,850)
 max_smpl_bsl = 650
+sg_filter    = True
+sg_window    = 30
+sg_polyorder = 3
+sipm_thr     = 50 #ADCs
+peak_sep     = 10
 
-sipm_thr = 50 #ADCs
-peak_sep = 10
-
-outfile = f"{out_path}/BACoN_cal_height_trigger_SiPMs_dist{peak_sep}_{file_name}"
+outfile = f"{out_path}/BACoN_cal_height_trigger_SiPMs_sg_filter_{sg_filter}_w{sg_window}_dist{peak_sep}_{file_name}"
 
 for i, channel in enumerate(trigger_SiPMs):
     print(channel)
     heights = np.array([])
     try:
-        _, subt_wfs_filt, all_peaks = pf.get_peaks_using_peakutils_no_PMT(RawTree, channel, sipm_thr=sipm_thr, peak_range=peak_range, wf_range_bsl=(0, max_smpl_bsl))
+        _, subt_wfs_filt, all_peaks = pf.get_peaks_using_peakutils_no_PMT(RawTree, channel, sipm_thr=sipm_thr, peak_range=peak_range, wf_range_bsl=(0, max_smpl_bsl),
+                                                                          sg_filter=sg_filter, window_length=sg_window, polyorder=sg_polyorder)
         heights                     = pf.height_of_peaks(subt_wfs_filt, all_peaks)
     except ValueError:
         continue
