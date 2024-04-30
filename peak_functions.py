@@ -79,14 +79,27 @@ def split_in_peaks_vals(wfs, stride, len_peak=5):
 def peak_height(waveform, peaks):
     return np.array([waveform[peak] for peak in peaks])
 
-def peak_height_deconv(zs_waveform, peaks, heights):
+def peak_height_deconv(zs_waveform, peaks, heights, thr=50):
+    if len(peaks)==1:
+        return heights
     for idx_peak in range(len(peaks)-1):
         zswf_sel = zs_waveform[peaks[idx_peak]:peaks[idx_peak+1]]
         if np.any(zswf_sel == 0):
             continue
         else:
             heights[idx_peak+1] -= np.min(zswf_sel)
-    return heights
+    return heights[heights > thr]
+
+def peak_height_deconv_indexes(zs_waveform, peaks, heights, thr=50):
+    if len(peaks)==1:
+        return peaks
+    for idx_peak in range(len(peaks)-1):
+        zswf_sel = zs_waveform[peaks[idx_peak]:peaks[idx_peak+1]]
+        if np.any(zswf_sel == 0):
+            continue
+        else:
+            heights[idx_peak+1] -= np.min(zswf_sel)
+    return peaks[heights > thr]
 
 def integrate_peaks(waveform, peaks):
 
