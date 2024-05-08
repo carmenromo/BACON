@@ -33,7 +33,7 @@ std_bsl_thr         = 15
 sg_filter_window    = 30
 sg_filter_polyorder = 3
 thr_ADC             = 50 #ths for the noise suppression and peak finder after SG filter
-min_dist            = 10 #min distance between peaks for peakutils
+min_dist            = 15 #min distance between peaks for peakutils
 
 outfile = f"{out_path}/BACoN_hits_and_times_thr{thr_ADC}_w{sg_filter_window}_dist{min_dist}_{file_name}"
 

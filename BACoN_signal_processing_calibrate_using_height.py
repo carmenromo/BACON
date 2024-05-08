@@ -27,7 +27,7 @@ peak_range = (650,850)
 sipm_thr = 50 #ADCs
 peak_sep = 10
 
-outfile = f"{out_path}/BACoN_cal_using_height_dist{peak_sep}_{file_name}"
+outfile = f"{out_path}/BACoN_cal_height_dist{peak_sep}_{file_name}"
 
 for channel in range(total_SiPMs):
     print(channel)
