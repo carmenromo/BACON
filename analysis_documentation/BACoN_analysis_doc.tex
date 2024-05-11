@@ -9,7 +9,7 @@
 \title{BACoN analysis}
 \author{Carmen Romo Luque}
 
-\graphicspath{{/Users/romoluque_c/LEGEND/BACON/Analysis_documentation/images/}}
+\graphicspath{{/Users/romoluque_c/Repositories/BACON_romo/analysis_documentation/images/}}
 
 \begin{document}
 	\maketitle
@@ -304,7 +304,7 @@
 	
 	\section{Single photoelectron shape}
 	
-	Peak shape for the different number of photoelectrons.
+	Figure \ref{fig:spe_shape} shows the peak shape for the different number of photoelectrons.
 	
 	\begin{figure}[!h]
 		\begin{center}
@@ -314,14 +314,22 @@
 		\end{center}
 	\end{figure}
 	
-	Fit of the 1 spe shape.
+	Figure \ref{fig:spe_shape_fit} presents the fit of the 1 spe shape using a double exponential distribution. Figure \ref{fig:fit_pulse_spe}, shows a gaussian fit of a selected pulse (after applying the SG filter algorithm) where the sigma value is close to 30 ns. From this result, we are going to take 15 samples (which is 30 ns divided by 2) as the minimum distance between peaks that out peak finder algorithm will use.
 	
 	\begin{figure}[!h]
 		\centering
 		\includegraphics[width=7.9cm]{spe_shape_fit.pdf}
 		\includegraphics[width=7.9cm]{spe_shape_fit2.pdf}
-		\caption{}
+		\caption{Double exponential fit to a single photon response.}
 		\label{fig:spe_shape_fit}
+	\end{figure}
+	
+	\begin{figure}[!h]
+		\begin{center}
+			\includegraphics[width=11cm]{fit_pulse_spe.pdf}
+			\caption{Gaussian fit (red) to a signal pulse filtered with the SG algorithm (blue) to extract the minimum distance allowed for the peak finder algorithm.}
+			\label{fig:fit_pulse_spe}
+		\end{center}
 	\end{figure}
 	
 	\section{Trigger time}
