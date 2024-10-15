@@ -15,7 +15,7 @@ filename = f"{in_path}/{file_name}.root"
 infile   = uproot.open(filename)
 RawTree  = infile['RawTree']
 
-outfile = f"{out_path}/BACoN_data_basic_run_info_{file_name}"
+outfile = f"{out_path}/BACoN_data_basic_info_{file_name}"
 
 all_chs      = range(13)
 max_smpl_bsl = 650

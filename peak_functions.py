@@ -29,10 +29,13 @@ def compute_baseline(wf, mode=True, wf_range_bsl=(0, None)):
     if mode:
         baseline = st.mode(wf[wf_range_bsl[0]:wf_range_bsl[1]], keepdims=False).mode.astype(np.float32)
     else:
-        baseline = np.mean(wf[wf_range_bsl[0]:wf_range_bsl[1]])
+        if len(wf.shape)==1:
+            baseline = np.mean(wf[wf_range_bsl[0]:wf_range_bsl[1]])
+        else:
+            baseline = np.mean(wf[wf_range_bsl[0]:wf_range_bsl[1]], axis=1)
     return baseline
 
-def subtract_baseline(wfs, mode=True, wf_range_bsl=(0, None)):
+def subtract_baseline(wfs, mode=True, wf_range_bsl=(0, None), mean_bsl=True):
     """
     Subtract the baseline to one or multiple waveforms in the input
     with a specific algorithm (mode or mean).
@@ -40,7 +43,11 @@ def subtract_baseline(wfs, mode=True, wf_range_bsl=(0, None)):
     if len(wfs.shape)==1: ## Only one waveform
         baseline = compute_baseline(wfs, mode=mode, wf_range_bsl=wf_range_bsl)
     elif len(wfs.shape)==2: ## Multiple wfs
-        baseline = np.mean([compute_baseline(wf, mode=mode, wf_range_bsl=wf_range_bsl) for wf in wfs])
+        if mean_bsl:
+            baseline = np.mean([compute_baseline(wf, mode=mode, wf_range_bsl=wf_range_bsl) for wf in wfs])
+        else:
+            baseline = np.array([compute_baseline(wf, mode=mode, wf_range_bsl=wf_range_bsl) for wf in wfs])
+
     return wfs - baseline
 
 def suppress_wf(waveform, threshold):
