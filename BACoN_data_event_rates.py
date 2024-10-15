@@ -50,7 +50,7 @@ sipm_thr     = 50
 peak_range   = (0, 7500)
 
 peak_height_all_chs = [[] for i in all_chs]
-evt_numb_all_chs    = [[] for i in all_chs]
+peak_index_all_chs  = [[] for i in all_chs]
 
 ## Thr values valid from 9/10/2024 since the bas voltage was changed
 std_thr_dict = {0: 13,
@@ -77,11 +77,11 @@ for ch in all_chs:
     _, subt_wfs_filt, all_peaks = get_peaks(filt_wfs, sipm_thr=sipm_thr, peak_range=peak_range)
     heights                     = pf.height_of_peaks(subt_wfs_filt, all_peaks)
     peak_height_all_chs[ch].append(heights)
-    evt_numb_all_chs   [ch].append(evt_numb)
+    peak_index_all_chs [ch].append(all_peaks)
 
 peak_height_all_chs = np.array(peak_height_all_chs, dtype=object)
-evt_numb_all_chs    = np.array(evt_numb_all_chs,    dtype=object)
+peak_index_all_chs  = np.array(peak_index_all_chs,    dtype=object)
 
 np.savez(outfile, 
          peak_height_all_chs=peak_height_all_chs,
-         evt_numb_all_chs=evt_numb_all_chs)
+         peak_index_all_chs=peak_index_all_chs)
