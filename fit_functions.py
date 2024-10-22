@@ -84,6 +84,7 @@ def string_fit(f, units='ADC', ndec=2, print_chi2=True):
 def gaussian_fit_IC(data, bins=100, prange=(-50, 150), ampl=100, mean=0, sigma=10, frange=(-50, 50), title='', xlabel='Amplitude (ADC)', units='ADC', ndec=2, print_chi2=True, figsize=(8,5)):
     plt.figure(figsize=figsize)
     y, x, _ = plt.hist(data, bins=bins, alpha=0.5, range=prange, histtype='step', linewidth=1.5)
+    plt.axvspan(frange[0], frange[1], color='grey', alpha=0.2)
     f = fit(gauss, shift_to_bin_centers(x), y, (ampl,mean,sigma), fit_range=frange, sigma=np.sqrt(y))
 
     plt.plot(shift_to_bin_centers(x), gauss(shift_to_bin_centers(x), *f.values[:3]), 'r--',

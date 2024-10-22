@@ -5,6 +5,7 @@
 \usepackage{palatino}
 \usepackage{graphicx}
 \usepackage{hyperref}
+\usepackage{xcolor}
 
 \title{BACoN analysis}
 \author{Carmen Romo Luque}
@@ -26,6 +27,9 @@
 	 \end{figure}
 	 
 	 The cryostat's liquid argon level is continuously monitored by measuring its weight. Additionally, the argon undergoes purification via a SAES PS4-MT3/15-R getter, which removes impurities such as H$_2$0, CO, CO$_2$, N$_2$, H$_2$, CH$_4$, reducing their concentrations to less than 1 part per billion (PPB) prior to liquefaction.
+	 
+	 
+	 \clearpage
 	
 	\section{SiPM calibration in a dark box}
 	\label{cal_dark_box}
@@ -87,9 +91,8 @@
 		\end{center}
 	\end{figure}
 	
-	%The data are processed by calculating the baseline and subtracting it for every event and sensor, and taking 2 $\mu$s integrals at the trigger time, giving rise to the spectra. The 2 $\mu$s integral width was chosen in NEXT for the standard calibration as a compromise between capturing all the light and the limitations imposed by the high level of noise in some channels \cite{internal_sipmCal_Andrew}.
-
-	%The gain is then calculated from the spectrum using the distance between the pedestal peak and those for 1, 2, ...  photoelectrons. Figure \ref{fig:gain_spectrum_fits}-\textit{left} exhibits a fitted spectrum from a SensL SiPM of the NEXT-White detector with individual gaussian fits for every peak to show the linear relation between them, from which the gain is extracted (Figure \ref{fig:gain_spectrum_fits}-\textit{right}). The calibration results in average pedestals for each channel as well as the single photon conversion values \cite{internal_sipmCal_Andrew}.
+	
+	\clearpage
 	
 	\section{SiPM calibration in the chamber}
 	
@@ -105,6 +108,7 @@
 		\end{center}
 	\end{figure}
 	
+	\clearpage
 	
 	\section{Data Run 2 analysis}
 	
@@ -245,13 +249,11 @@
 	
 	\begin{figure}[!h]
 		\begin{center}
-			\includegraphics[width=12cm]{hit_map_example.pdf}
+			\includegraphics[width=12cm]{hit_map_ch8.png}
 			\caption{Hit map for one channel. Each bin represents a peak with its timestamp (position in the waveform) and height (amplitude). Each horizontal line corresponds to a integer number of photoelectrons.}
 			\label{fig:hit_map_example}
 		\end{center}
 	\end{figure}
-	
-	
 	
 	
 	\subsection*{Additional ways to compute the hit map}
@@ -301,6 +303,29 @@
 	\end{figure}
 	
 	
+	\clearpage
+	
+	\section{Preliminary comparison with the different xenon amounts}
+	
+	Using the blue method explained in the previous section (taking the time where the waveform exceeds the threshold and deconvolving the second peak) a comparison of the data with different amounts of xenon can be performed for each independent channel (see Figure \ref{fig:hit_map_plot_ch8} for the results of one selected channel). In the spectra, the first peak corresponds to the singlet light, while the subsequent slope is caused by light from the triplet state. Without xenon (light blue case), the contributions come solely from the liquid argon (with lifetimes of approximately 5 ns and 1600 ns for the singlet and triplet, respectively). Xenon has shorter lifetimes, but the mixed state ArXe$^*$ excimer has a long lifetime of 4700 ns and a decay wavelength of 150 nm. Therefore, as the mixed state takes on a dominant role, the slope of the tail after the peak becomes more negative (as is the dark blue case of 2 ppm of xenon).
+	
+	\begin{figure}[!h]
+	\begin{center}
+		\includegraphics[width=13cm]{hit_map_plot_ch8.png}
+		\caption{Sum of the peaks on each timestamp for the different xenon concentrations for the same channel (channel 8).}
+		\label{fig:hit_map_plot_ch8}
+	\end{center}
+	\end{figure}
+	
+	
+	Once the results are obtained for the different xenon concentrations, a fit of each case should be carried out to measure the lifetime for the singlet, the triplet and the mixed state. 
+
+	\textcolor{red}{To be completed.}
+	
+	
+	
+	
+	\clearpage
 	
 	\section{Single photoelectron shape}
 	
@@ -309,7 +334,7 @@
 	\begin{figure}[!h]
 		\begin{center}
 			\includegraphics[width=11cm]{spe_shape.pdf}
-			\caption{}
+			\caption{Peaks for the different number of single photoelectrons splitted in colors.}
 			\label{fig:spe_shape}
 		\end{center}
 	\end{figure}
@@ -331,6 +356,9 @@
 			\label{fig:fit_pulse_spe}
 		\end{center}
 	\end{figure}
+	
+	
+	\clearpage
 	
 	\section{Trigger time}
 	
@@ -356,6 +384,8 @@
 	\end{figure}
 	
 	
+	\clearpage
+	
 	\section{Rise time}
 	
 	We are computing the rise time of the peaks as the difference between the maximum of the peak and the point that surpass the selected threshold.
@@ -377,6 +407,9 @@
 			\label{fig:rise_time}
 		\end{center}
 	\end{figure}
+	
+	
+	\clearpage
 	
 	\section{Energy spectrum}
 	
