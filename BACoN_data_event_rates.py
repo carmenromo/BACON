@@ -80,7 +80,7 @@ for ch in all_chs:
     peak_index_all_chs [ch].append(all_peaks)
 
 peak_height_all_chs = np.array(peak_height_all_chs, dtype=object)
-peak_index_all_chs  = np.array(peak_index_all_chs,    dtype=object)
+peak_index_all_chs  = np.array(peak_index_all_chs,  dtype=object)
 
 np.savez(outfile, 
          peak_height_all_chs=peak_height_all_chs,
