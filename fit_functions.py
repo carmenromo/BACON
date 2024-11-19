@@ -1,7 +1,7 @@
 ### Fit functions from IC
-
-import numpy as np
+import math
 import scipy
+import numpy as np
 
 import matplotlib.pyplot as plt
 from collections import namedtuple
