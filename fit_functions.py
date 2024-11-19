@@ -140,7 +140,7 @@ def truncate(number, decimals=0):
 
 def plot_linear_fit(y, yerr):
     x    = np.arange(len(y))+1
-    slope, intercept, r_value, p_value, std_err = stats.linregress(x, y)
+    slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(x, y)
     line = slope*x + intercept
 
     plt.figure(figsize=(8,5))
@@ -156,7 +156,7 @@ def fit_spectrum_and_plot(data, channel=7, initial_guess=[1000, 100, 20], bins=1
     
     plt.figure(figsize=(7, 5))
     y, x, _    = plt.hist(data, bins=bins, range=rng, log=False, alpha=0.6)
-    popt, pcov = curve_fit(multi_gaussian, shift_to_bin_centers(x), y, p0=initial_guess)
+    popt, pcov = scipy.optimize.curve_fit(multi_gaussian, shift_to_bin_centers(x), y, p0=initial_guess)
     
     plt.plot(x, multi_gaussian(x, *popt), 'r--', label='Fit')
     plt.xlabel('Amplitude (ADCs)', fontsize=15)
