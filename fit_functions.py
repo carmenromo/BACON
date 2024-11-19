@@ -36,6 +36,19 @@ def gauss(x, area, mu, sigma):
         return np.inf
     return area/(2*np.pi)**.5/sigma * np.exp(-0.5*(x-mu)**2./sigma**2.)
 
+def gaussian(x, amplitude, mean, stddev):
+    return amplitude * np.exp(-(x - mean)**2 / (2 * stddev**2))
+
+def multi_gaussian(x, *params):
+    n_peaks = len(params) // 3
+    y = np.zeros_like(x)
+    for i in range(n_peaks):
+        amplitude = params[i * 3]
+        mean = params[i * 3 + 1]
+        stddev = params[i * 3 + 2]
+        y += gaussian(x, amplitude, mean, stddev)
+    return y
+
 def fit(func, x, y, seed=(), fit_range=None, **kwargs):
     if fit_range is not None:
         sel  = in_range(x, *fit_range)
@@ -62,7 +75,6 @@ def fit(func, x, y, seed=(), fit_range=None, **kwargs):
 
 def shift_to_bin_centers(x):
     return x[:-1] + np.diff(x) * 0.5
-
 
 def f_values(f):
     _, mu,     sigma     = f.values
@@ -111,3 +123,51 @@ def gaussian_fit_IC_subplot(ax, data, bins=100, prange=(-50, 150), ampl=100, mea
     ax.legend(loc='upper right', handlelength=0.5)
     
     return f_values(f)
+
+def truncate(number, decimals=0):
+    """
+    Returns a value truncated to a specific number of decimal places.
+    """
+    if not isinstance(decimals, int):
+        raise TypeError("decimal places must be an integer.")
+    elif decimals < 0:
+        raise ValueError("decimal places has to be 0 or more.")
+    elif decimals == 0:
+        return math.trunc(number)
+
+    factor = 10.0 ** decimals
+    return math.trunc(number * factor) / factor
+
+def plot_linear_fit(y, yerr):
+    x    = np.arange(len(y))+1
+    slope, intercept, r_value, p_value, std_err = stats.linregress(x, y)
+    line = slope*x + intercept
+
+    plt.figure(figsize=(8,5))
+    plt.errorbar(x, y, yerr=yerr, marker='_', markersize=5, linestyle='', c='k', label=f'Measured gain values')
+    plt.plot(x, line, color='r', alpha=0.7, label=f'Fit: y = x*{round(slope, 2)} - {round(np.abs(intercept), 2)}, \n     R$^2$ = {truncate(r_value, 2)}')
+    plt.xlabel('Peak number')
+    plt.ylabel('Mu from fit (ADCs)')
+    plt.legend(fontsize=14, loc='upper left')
+    plt.show()
+    return slope
+
+def fit_spectrum_and_plot(data, channel=7, initial_guess=[1000, 100, 20], bins=150, rng=(100,1500), num_peaks_fit=4):
+    
+    plt.figure(figsize=(7, 5))
+    y, x, _    = plt.hist(data, bins=bins, range=rng, log=False, alpha=0.6)
+    popt, pcov = curve_fit(multi_gaussian, shift_to_bin_centers(x), y, p0=initial_guess)
+    
+    plt.plot(x, multi_gaussian(x, *popt), 'r--', label='Fit')
+    plt.xlabel('Amplitude (ADCs)', fontsize=15)
+    plt.ylabel('Entries/bin',      fontsize=15)
+    plt.title(f"Spectrum for channel {channel} (height of the peaks)", fontsize=15)
+    plt.tight_layout()
+    plt.show()
+    
+    perr = np.sqrt(np.diag(pcov))
+    
+    all_means     = np.array([popt[i*3+1] for i in range(len(popt)//3)])
+    all_means_err = np.array([perr[i*3+1] for i in range(len(perr)//3)])
+    
+    return plot_linear_fit(all_means[:num_peaks_fit], all_means_err[:num_peaks_fit])
