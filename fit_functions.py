@@ -150,7 +150,7 @@ def plot_linear_fit(y, yerr):
     plt.ylabel('Mu from fit (ADCs)')
     plt.legend(fontsize=14, loc='upper left')
     plt.show()
-    return slope
+    return slope, intercept
 
 def fit_spectrum_and_plot(data, channel=7, initial_guess=[1000, 100, 20], bins=150, rng=(100,1500), num_peaks_fit=4):
     
