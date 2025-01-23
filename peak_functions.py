@@ -35,6 +35,29 @@ def compute_baseline(wf, mode=True, wf_range_bsl=(0, None)):
             baseline = np.mean(wf[wf_range_bsl[0]:wf_range_bsl[1]], axis=1)
     return baseline
 
+def compute_baseline_std_lim(wf, mode=True, wf_range_bsl=(0, None), std_lim=50):
+    """
+    Compute the baseline for a single waveform in the input
+    with a specific algorithm (mode or mean), a specific range
+    and a certain limit on the amplitude.
+    """
+    wf_sel_region = wf[wf_range_bsl[0]:wf_range_bsl[1]]
+    low_bnd = st.mode(wf, keepdims=False).mode.astype(np.float32) - std_lim #ADC
+    upp_bnd = st.mode(wf, keepdims=False).mode.astype(np.float32) + std_lim #ADC
+    filt_wf = wf_sel_region[(wf_sel_region >= low_bnd) & (wf_sel_region <= upp_bnd)]
+    if len(filt_wf)==0:
+        if mode:
+            baseline = st.mode(wf, keepdims=False).mode.astype(np.float32)
+        else:
+            baseline = np.mean(wf)
+
+    else:
+        if mode:
+            baseline = st.mode(filt_wf, keepdims=False).mode.astype(np.float32)
+        else:
+            baseline = np.mean(filt_wf)
+    return baseline
+
 def subtract_baseline(wfs, mode=True, wf_range_bsl=(0, None), mean_bsl=True):
     """
     Subtract the baseline to one or multiple waveforms in the input
@@ -49,6 +72,14 @@ def subtract_baseline(wfs, mode=True, wf_range_bsl=(0, None), mean_bsl=True):
             baseline = np.array([compute_baseline(wf, mode=mode, wf_range_bsl=wf_range_bsl) for wf in wfs])
 
     return wfs - baseline
+
+def subtract_baseline_std_lim(wf, mode=True, wf_range_bsl=(0, None), std_lim=50):
+    """
+    Subtract the baseline to one waveform in the input
+    with a specific algorithm (mode or mean).
+    """
+    baseline = compute_baseline_std_lim(wf, mode=mode, wf_range_bsl=wf_range_bsl, std_lim=std_lim)
+    return wf - baseline
 
 def suppress_wf(waveform, threshold):
     """Put zeros where the waveform is below some threshold.
@@ -82,7 +113,7 @@ def split_in_peaks_vals(wfs, stride, len_peak=5):
         return [wfs[peak] for peak in ind_peaks_splitted]
     else:
         return []
-    
+
 def peak_height(waveform, peaks):
     return np.array([waveform[peak] for peak in peaks])
 
@@ -96,6 +127,52 @@ def peak_height_deconv(zs_waveform, peaks, heights, thr=50):
         else:
             heights[idx_peak+1] -= np.min(zswf_sel)
     return heights[heights > thr]
+
+def peak_height_deconv_reject_second_peak(zs_waveform, peaks, heights, thr=50):
+    # If there is only one peak, no need to process, return heights and peaks as is
+    if len(peaks)==1:
+        return heights, peaks
+    
+    indxs_to_remove = []
+    for idx_peak in range(len(peaks) - 1):
+        zswf_sel = zs_waveform[peaks[idx_peak]:peaks[idx_peak + 1]]
+        if np.any(zswf_sel == 0):
+            continue
+        else:
+            indxs_to_remove.append(idx_peak + 1)  # Mark the second peak for removal
+
+    # If there are peaks to remove, update heights and peaks
+    if len(indxs_to_remove) != 0:
+        # Ensure that indxs_to_remove is a boolean mask
+        mask = np.ones(len(heights), dtype=bool)
+        mask[indxs_to_remove] = False
+
+        heights = heights[mask]
+        peaks   = peaks  [mask]
+
+    return heights[heights > thr], peaks[heights > thr]
+
+
+def peak_height_deconv_save_secondary_peaks(zs_waveform, peaks, heights):
+    """This function saves only the secondary peaks to study pile-up.
+       It saves the absolute and relative height of the second peak."""
+    if len(peaks)==1:
+        return np.array([]), np.array([]), np.array([])
+
+    indxs_to_save   = []
+    abs_sec_heights = []
+    rel_sec_heights = []
+    for idx_peak in range(len(peaks) - 1):
+        zswf_sel = zs_waveform[peaks[idx_peak]:peaks[idx_peak + 1]]
+        if np.any(zswf_sel == 0):
+            continue
+        else:
+            indxs_to_save  .append(peaks  [idx_peak + 1])  # Mark the second peak for saving
+            abs_sec_heights.append(heights[idx_peak + 1])
+            rel_sec_heights.append(heights[idx_peak + 1] - np.min(zswf_sel))
+
+    return np.array(indxs_to_save), np.array(abs_sec_heights), np.array(rel_sec_heights)
+
 
 def peak_height_deconv_indexes(zs_waveform, peaks, heights, thr=50):
     if len(peaks)==1:
@@ -116,17 +193,17 @@ def integrate_peaks(waveform, peaks):
         next_val_left  = p_wk - 1
         next_val_right = p_wk + 1
         peak_indxs.append(p_wk)
-        
+
         while next_val_left >= 0 and waveform[next_val_left] > 0:
             peak_indxs.append(next_val_left)
             next_val_left -= 1
-        
+
         while next_val_right < len(waveform) and waveform[next_val_right] > 0:
             peak_indxs.append(next_val_right)
             next_val_right += 1
-        
+
         peaks_indxs.append(np.array(peak_indxs))
-    
+
     return np.array([np.sum(waveform[idx]) for idx in peaks_indxs])
 
 def find_wfs_above_thr(wfs, thr):
@@ -151,22 +228,22 @@ def get_peaks_peakutils(waveform, thres=0.35, min_dist=100, thres_abs=False):
 
 def get_peaks_using_peakutils(RawTree, channel, num_wfs=None, sipm_thr=50, pmt_thr=1000, peak_range=(650,850)):
     all_raw_wfs       = wfs_from_rawtree(RawTree, channel)[:num_wfs]
-    
+
     ## Subtract baseline
     subt_raw_wfs      = list(map(subtract_baseline, all_raw_wfs))
-    
+
     ## Get and remove saturated events from PMTs
     saturated_evts    = get_saturating_evts_using_pmt_signal(RawTree, num_wfs=num_wfs, pmt_thr=pmt_thr)
     filt_wfs          = remove_waveforms_by_indices(subt_raw_wfs, saturated_evts)
-    
+
     ## Zero suppression
     zs_raw_wfs        = noise_suppression(filt_wfs, threshold=sipm_thr)
-    
+
     ## Remove events with no signal in the ROI
     empty_evts        = np.array([idx for idx, zwf in enumerate(zs_raw_wfs) if np.sum(zwf[peak_range[0]:peak_range[1]])==0])
     filter_empty_zwfs = remove_waveforms_by_indices(zs_raw_wfs, empty_evts)
     subt_raw_wfs_filt = remove_waveforms_by_indices(filt_wfs,   empty_evts)
-    
+
     ## Get the peaks found in the ROI
     all_peaks         = list(map(get_peaks_peakutils, filter_empty_zwfs))
     return filter_empty_zwfs, subt_raw_wfs_filt, all_peaks
@@ -213,6 +290,9 @@ def area_zs(zs_waveforms, waveforms, peak_sep=10):
     return all_areas
 
 def get_values_thr_from_zswf(waveform, idx_peaks):
+    """Get the indices when the peaks cross the set threshold,
+       that is set in a previous step to compute the ZS wfs
+    """
     ## The wfs should be zeros except for the peaks
     vals_thr = np.ones(len(idx_peaks))
     for i, peak in enumerate(idx_peaks):
@@ -228,3 +308,26 @@ def get_values_thr_from_zswf(waveform, idx_peaks):
             else:
                 vals_thr[i] = idx_peaks[i-1] + zeros_in_range[-1] + 1
     return vals_thr
+
+def find_crossings(wf_x, waveform, level):
+    """Find where the waveform crosses the level
+    """
+    crosses = []
+    for i in range(1, len(waveform)):
+        if (waveform[i-1] < level and waveform[i] >= level) or (waveform[i-1] > level and waveform[i] <= level):
+            # Linear interpolation to get a more accurate crossing point
+            x_cross = wf_x[i-1] + (wf_x[i] - wf_x[i-1]) * (level - waveform[i-1]) / (waveform[i] - waveform[i-1])
+            crosses.append(x_cross)
+    return crosses
+
+def get_evt_trigger_t(wf, thr_ADC_trigg=200, rng=(1400, 1500)):
+    """Get trigger time in SAMPLE NUMBER from waveform
+    """
+    wf_x        = np.arange(len(wf))
+    sel_wf_x    = wf_x[(wf_x > rng[0]) & (wf_x < rng[1])]
+    sel_wf_y    = wf  [(wf_x > rng[0]) & (wf_x < rng[1])]
+    crossing_pt = find_crossings(sel_wf_x, sel_wf_y, thr_ADC_trigg)
+    if len(crossing_pt)==0:
+        return 0
+    else:
+        return crossing_pt[0]
