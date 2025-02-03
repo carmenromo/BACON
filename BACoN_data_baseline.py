@@ -17,7 +17,7 @@ RawTree  = infile['RawTree']
 
 outfile = f"{out_path}/BACoN_data_baseline_{file_name}"
 
-all_chs      = range(13)
+all_chs      = range(12)
 max_smpl_bsl = 650
 
 ## Thr values valid from 9/10/2024 since the bias voltage was changed
