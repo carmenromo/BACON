@@ -46,10 +46,10 @@ for ch in all_chs:
     all_wfs = pf.wfs_from_rawtree(RawTree, ch)
 
     ## 1) Compute the baseline for each channel (mean and mode at the beginning and at the end of each wf)
-    bsl_mean_i_dict[ch] = pf.compute_baseline_std_lim(all_wfs[:, :max_smpl_bsl],  mode=False, std_lim=3*std_thr_dict[ch])
-    bsl_mode_i_dict[ch] = pf.compute_baseline_std_lim(all_wfs[:, :max_smpl_bsl],  mode=True,  std_lim=3*std_thr_dict[ch])
-    bsl_mean_f_dict[ch] = pf.compute_baseline_std_lim(all_wfs[:, -max_smpl_bsl:], mode=False, std_lim=3*std_thr_dict[ch])
-    bsl_mode_f_dict[ch] = pf.compute_baseline_std_lim(all_wfs[:, -max_smpl_bsl:], mode=True,  std_lim=3*std_thr_dict[ch])
+    bsl_mean_i_dict[ch] = np.array([pf.compute_baseline_std_lim(wf, mode=False, std_lim=3*std_thr_dict[ch]) for wf in all_wfs[:, :max_smpl_bsl]])
+    bsl_mode_i_dict[ch] = np.array([pf.compute_baseline_std_lim(wf, mode=True,  std_lim=3*std_thr_dict[ch]) for wf in all_wfs[:, :max_smpl_bsl]])
+    bsl_mean_f_dict[ch] = np.array([pf.compute_baseline_std_lim(wf, mode=False, std_lim=3*std_thr_dict[ch]) for wf in all_wfs[:, -max_smpl_bsl:]])
+    bsl_mode_f_dict[ch] = np.array([pf.compute_baseline_std_lim(wf, mode=True,  std_lim=3*std_thr_dict[ch]) for wf in all_wfs[:, -max_smpl_bsl:]])
 
     ## 2) Std of the waveforms
     std_all_dict[ch] = np.std(all_wfs, axis=1)
