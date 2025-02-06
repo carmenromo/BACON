@@ -206,6 +206,35 @@ def integrate_peaks(waveform, peaks):
 
     return np.array([np.sum(waveform[idx]) for idx in peaks_indxs])
 
+def integrate_peaks_and_get_len_peaks(waveform, peaks):
+
+    peaks_indxs = []
+    peaks_lens  = []
+    for p_wk in peaks:
+        peak_indxs     = []
+        next_val_left  = p_wk - 1
+        next_val_right = p_wk + 1
+        peak_indxs.append(p_wk)
+
+        while next_val_left >= 0 and waveform[next_val_left] > 0:
+            peak_indxs.append(next_val_left)
+            next_val_left -= 1
+
+        while next_val_right < len(waveform) and waveform[next_val_right] > 0:
+            peak_indxs.append(next_val_right)
+            next_val_right += 1
+
+        peaks_indxs.append(np.array(peak_indxs))
+        peaks_lens .append(len(peak_indxs)) # Num of timesamples of the ZS peak
+    
+    return np.array([np.sum(waveform[idx]) for idx in peaks_indxs]), np.array(peaks_lens)
+
+def area_and_len_of_peaks(waveforms, peaks):
+    all_areas_and_lens = [integrate_peaks_and_get_len_peaks(wf, pk) for wf, pk in zip(waveforms, peaks)]
+    all_areas          = np.concatenate([areas for areas, _ in all_areas_and_lens])
+    all_lens           = np.concatenate([lens  for _, lens  in all_areas_and_lens])
+    return all_areas, all_lens
+
 def find_wfs_above_thr(wfs, thr):
     indices_above_thr = [idx for idx, wf in enumerate(wfs) if len(wf[wf>thr]) > 0]
     return np.array(indices_above_thr)
