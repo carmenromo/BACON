@@ -206,7 +206,7 @@ def integrate_peaks(waveform, peaks):
 
     return np.array([np.sum(waveform[idx]) for idx in peaks_indxs])
 
-def integrate_peaks_and_get_len_peaks(waveform, peaks):
+def integrate_and_get_len_peaks(waveform, peaks):
 
     peaks_indxs = []
     peaks_lens  = []
@@ -230,7 +230,7 @@ def integrate_peaks_and_get_len_peaks(waveform, peaks):
     return np.array([np.sum(waveform[idx]) for idx in peaks_indxs]), np.array(peaks_lens)
 
 def area_and_len_of_peaks(waveforms, peaks):
-    all_areas_and_lens = [integrate_peaks_and_get_len_peaks(wf, pk) for wf, pk in zip(waveforms, peaks)]
+    all_areas_and_lens = [integrate_and_get_len_peaks(wf, pk) for wf, pk in zip(waveforms, peaks)]
     all_areas          = np.concatenate([areas for areas, _ in all_areas_and_lens])
     all_lens           = np.concatenate([lens  for _, lens  in all_areas_and_lens])
     return all_areas, all_lens

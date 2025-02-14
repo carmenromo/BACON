@@ -20,7 +20,7 @@ filename = f"{in_path}/{file_name}.root"
 infile   = uproot.open(filename)
 RawTree  = infile['RawTree']
 
-outfile = f"{out_path}/BACoN_pmt_analysis_peaks_{file_name}"
+outfile = f"{out_path}/BACoN_pmt_analysis_max_{file_name}"
 
 all_chs      = range(13)
 max_smpl_bsl = 650
@@ -42,26 +42,19 @@ std_thr_dict = {0: 13,
                 11: 40,
                 12: 4}
 
-h_peaks_pmt   = np.array([])
-i_peaks_pmt   = np.array([])
-l_peaks_pmt   = np.array([])
+max_vals_dict = {}
+idx_vals_dict = {}
+for ch in all_chs:
+    print(f'Channel {ch}')
+    all_wfs    = pf.wfs_from_rawtree(RawTree, ch)
+    if ch < 9:
+        swfs = pf.subtract_baseline_std_lim(all_wfs, mode=False, wf_range_bsl=(0, max_smpl_bsl), std_lim=3*std_thr_dict[ch])
+    else:
+        swfs = np.array([blr.pmt_deconvolver(wf, wf_range_bsl=(0, max_smpl_bsl), baseline_mode=False, std_lim=3*std_thr_dict[ch]) for wf in all_wfs])
+    max_vals_dict[ch] = np.max   (swfs, axis=1)
+    idx_vals_dict[ch] = np.argmax(swfs, axis=1)
 
-ch    = 12
-wfs   = pf.wfs_from_rawtree(RawTree, ch)
-swfs  = np.array([blr.pmt_deconvolver(wf, wf_range_bsl=(0, max_smpl_bsl), baseline_mode=False, std_lim=3*std_thr_dict[ch]) for wf in wfs])
-zswfs = pf.noise_suppression(swfs, threshold=thr_ADC_pmt)
-partial_get_peaks_peakutils = partial(pf.get_peaks_peakutils, thres=thr_ADC_pmt, min_dist=min_dist_pmt, thres_abs=True)
-idx_peaks_max               = np.array(list(map(partial_get_peaks_peakutils, zswfs)), dtype=object)
-height_peaks                = pf.height_of_peaks(zswfs, idx_peaks_max)
-integral_peaks, len_peaks   = pf.area_and_len_of_peaks(zswfs, idx_peaks_max)
-h_peaks_pmt = height_peaks
-i_peaks_pmt = integral_peaks
-l_peaks_pmt = len_peaks
-
-np.savez(outfile,
-         h_peaks_pmt=h_peaks_pmt,
-         i_peaks_pmt=i_peaks_pmt,
-         l_peaks_pmt=l_peaks_pmt)
+np.savez(outfile, max_vals_dict=max_vals_dict, idx_vals_dict=idx_vals_dict)
 
 end_time = time.time()
 elapsed_time = end_time - start_time
