@@ -140,7 +140,7 @@ def truncate(number, decimals=0):
 
 def plot_linear_fit(y, yerr):
     x    = np.arange(len(y))+1
-    slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(x, y)
+    slope, intercept, r_value, _, _ = scipy.stats.linregress(x, y)
     line = slope*x + intercept
 
     plt.figure(figsize=(8,5))
@@ -152,7 +152,7 @@ def plot_linear_fit(y, yerr):
     plt.show()
     return slope, intercept
 
-def fit_spectrum_and_plot(data, channel=7, initial_guess=[1000, 100, 20], bins=150, rng=(100,1500), num_peaks_fit=4):
+def fit_spectrum_and_plot(data, channel=7, initial_guess=[1000, 100, 20], bins=150, rng=(100,1500), num_peaks_fit=4, title=None):
     
     plt.figure(figsize=(7, 5))
     y, x, _    = plt.hist(data, bins=bins, range=rng, log=False, alpha=0.6)
@@ -161,7 +161,10 @@ def fit_spectrum_and_plot(data, channel=7, initial_guess=[1000, 100, 20], bins=1
     plt.plot(x, multi_gaussian(x, *popt), 'r--', label='Fit')
     plt.xlabel('Amplitude (ADCs)', fontsize=15)
     plt.ylabel('Entries/bin',      fontsize=15)
-    plt.title(f"Spectrum for channel {channel} (height of the peaks)", fontsize=15)
+    if title:
+        plt.title(title, fontsize=15)
+    else:
+        plt.title(f"Spectrum for channel {channel} (height of the peaks)", fontsize=15)
     plt.tight_layout()
     plt.show()
     
