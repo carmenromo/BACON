@@ -31,16 +31,18 @@ for filename in sorted_files:
 for date0 in all_dates:
     t_diffs = []
     for filename in sorted_files:
-        date, fnum = extract_date_obj_and_number(filename)
-        if date == date0:
+        try:
+            date, fnum = extract_date_obj_and_number(filename)
+            if date == date0:
+                RawTree    = uproot.open(filename)['RawTree']
+                timestamp1 = RawTree['eventData/evtime'].array()[ 0]
+                timestamp2 = RawTree['eventData/evtime'].array()[-1]
 
-            RawTree    = uproot.open(filename)['RawTree']
-            timestamp1 = RawTree['eventData/evtime'].array()[ 0]
-            timestamp2 = RawTree['eventData/evtime'].array()[-1]
-
-            # Calculate the difference in seconds
-            time_difference = timestamp2 - timestamp1
-            t_diffs.append(time_difference)
+                # Calculate the difference in seconds
+                time_difference = timestamp2 - timestamp1
+                t_diffs.append(time_difference)
+        except:
+            continue
 
     print(f"Filename: {date0}. Time difference in mins:", np.sum(t_diffs)/60)
 
