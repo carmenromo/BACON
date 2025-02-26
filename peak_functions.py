@@ -235,6 +235,12 @@ def area_and_len_of_peaks(waveforms, peaks):
     all_lens           = np.concatenate([lens  for _, lens  in all_areas_and_lens])
     return all_areas, all_lens
 
+def area_and_len_of_peaks_no_concat(waveforms, peaks):
+    all_areas_and_lens = [integrate_and_get_len_peaks(wf, pk) for wf, pk in zip(waveforms, peaks)]
+    all_areas          = np.array([areas for areas, _ in all_areas_and_lens], dtype=object)
+    all_lens           = np.array([lens  for _, lens  in all_areas_and_lens], dtype=object)
+    return all_areas, all_lens
+
 def find_wfs_above_thr(wfs, thr):
     indices_above_thr = [idx for idx, wf in enumerate(wfs) if len(wf[wf>thr]) > 0]
     return np.array(indices_above_thr)

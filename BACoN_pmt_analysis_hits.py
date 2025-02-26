@@ -20,9 +20,8 @@ filename = f"{in_path}/{file_name}.root"
 infile   = uproot.open(filename)
 RawTree  = infile['RawTree']
 
-outfile = f"{out_path}/BACoN_pmt_analysis_peaks_{file_name}"
+outfile = f"{out_path}/BACoN_pmt_analysis_hits_{file_name}"
 
-all_chs      = range(13)
 max_smpl_bsl = 650
 thr_ADC_pmt  = 20
 min_dist_pmt = 15
@@ -46,12 +45,17 @@ ch    = 12
 wfs   = pf.wfs_from_rawtree(RawTree, ch)
 swfs  = np.array([blr.pmt_deconvolver(wf, wf_range_bsl=(0, max_smpl_bsl), baseline_mode=False, std_lim=3*std_thr_dict[ch]) for wf in wfs])
 zswfs = pf.noise_suppression(swfs, threshold=thr_ADC_pmt)
+
+non_zero_evts = np.where(np.any(zswfs != 0, axis=1))[0]
+filt_wfs      = zswfs[non_zero_evts]
+
 partial_get_peaks_peakutils = partial(pf.get_peaks_peakutils, thres=thr_ADC_pmt, min_dist=min_dist_pmt, thres_abs=True)
-idx_peaks_max               = np.array(list(map(partial_get_peaks_peakutils, zswfs)), dtype=object)
-height_peaks                = pf.height_of_peaks(zswfs, idx_peaks_max)       ## Heights and integrals concatenated
-integral_peaks, len_peaks   = pf.area_and_len_of_peaks(zswfs, idx_peaks_max) ## Heights and integrals concatenated
+idx_peaks_max               = np.array(list(map(partial_get_peaks_peakutils, filt_wfs)),   dtype=object)
+height_peaks                = np.array(list(map(pf.peak_height, filt_wfs, idx_peaks_max)), dtype=object)
+integral_peaks, len_peaks   = pf.area_and_len_of_peaks_no_concat(filt_wfs, idx_peaks_max)
 
 np.savez(outfile,
+         non_zero_evts=non_zero_evts,
          h_peaks_pmt=height_peaks,
          i_peaks_pmt=integral_peaks,
          l_peaks_pmt=len_peaks)
