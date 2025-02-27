@@ -56,6 +56,7 @@ integral_peaks, len_peaks   = pf.area_and_len_of_peaks_no_concat(filt_wfs, idx_p
 
 np.savez(outfile,
          non_zero_evts=non_zero_evts,
+         idx_peaks_pmt=idx_peaks_max,
          h_peaks_pmt=height_peaks,
          i_peaks_pmt=integral_peaks,
          l_peaks_pmt=len_peaks)
