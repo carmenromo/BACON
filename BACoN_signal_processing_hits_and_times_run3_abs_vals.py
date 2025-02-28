@@ -53,7 +53,7 @@ std_thr_dict = {0: 13,
                 10: 40,
                 11: 40}
 
-outfile = f"{out_path}/BACoN_run3_hits_and_times_thr{thr_ADC}_mean_w{sg_filter_window}_dist{min_dist}_test_{file_name}"
+outfile = f"{out_path}/BACoN_run3_hits_and_times_thr{thr_ADC}_mean_w{sg_filter_window}_dist{min_dist}_abs_vals_{file_name}"
 
 normal_chs  = range(9)
 trigger_chs = [9, 10, 11]
