@@ -10,7 +10,7 @@ import peakutils
 
 import blr_functions as blr
 
-def parse_args(args):
+def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('in_path'  , help = "input files path"   )
     parser.add_argument('file_name', help = "name of input files")
@@ -22,17 +22,14 @@ def wfs_from_rawtree(RawTree, channel):
 
 def compute_baseline(wf, mode=True, wf_range_bsl=(0, None)):
     """
-    Compute the baseline for a waveform in the input
-    with a specific algorithm (mode or mean) and a 
-    specific range.
+    Compute the baseline for a single waveform in the
+    input with a specific algorithm (mode or mean) and
+    a specific range.
     """
     if mode:
         baseline = st.mode(wf[wf_range_bsl[0]:wf_range_bsl[1]], keepdims=False).mode.astype(np.float32)
     else:
-        if len(wf.shape)==1:
-            baseline = np.mean(wf[wf_range_bsl[0]:wf_range_bsl[1]])
-        else:
-            baseline = np.mean(wf[wf_range_bsl[0]:wf_range_bsl[1]], axis=1)
+        baseline = np.mean(wf[wf_range_bsl[0]:wf_range_bsl[1]])
     return baseline
 
 def compute_baseline_std_lim(wf, mode=True, wf_range_bsl=(0, None), std_lim=50):

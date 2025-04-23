@@ -1,10 +1,9 @@
-import sys
 import uproot
 import numpy          as np
 import peak_functions as pf
 
 
-arguments = pf.parse_args(sys.argv)
+arguments = pf.parse_args()
 in_path   = arguments.in_path
 file_name = arguments.file_name
 out_path  = arguments.out_path
@@ -32,10 +31,10 @@ for ch in all_chs:
     all_wfs = pf.wfs_from_rawtree(RawTree, ch)
 
     ## 1) Compute the baseline for each channel (mean and mode at the beginning and at the end of each wf)
-    bsl_mean_i_dict[ch] = pf.compute_baseline(all_wfs[:, :max_smpl_bsl],  mode=False)
-    bsl_mode_i_dict[ch] = pf.compute_baseline(all_wfs[:, :max_smpl_bsl],  mode=True)
-    bsl_mean_f_dict[ch] = pf.compute_baseline(all_wfs[:, -max_smpl_bsl:], mode=False)
-    bsl_mode_f_dict[ch] = pf.compute_baseline(all_wfs[:, -max_smpl_bsl:], mode=True)
+    bsl_mode_i_dict[ch] = np.array([pf.compute_baseline(wf, mode=True,  wf_range_bsl=(0, max_smpl_bsl))         for wf in all_wfs])
+    bsl_mean_i_dict[ch] = np.array([pf.compute_baseline(wf, mode=False, wf_range_bsl=(0, max_smpl_bsl))         for wf in all_wfs])
+    bsl_mode_f_dict[ch] = np.array([pf.compute_baseline(wf, mode=True,  wf_range_bsl=(7500-max_smpl_bsl, 7500)) for wf in all_wfs])
+    bsl_mean_f_dict[ch] = np.array([pf.compute_baseline(wf, mode=False, wf_range_bsl=(7500-max_smpl_bsl, 7500)) for wf in all_wfs])
 
     ## 2) Std of the waveforms
     std_all_dict[ch] = np.std(all_wfs, axis=1)

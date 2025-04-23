@@ -1,5 +1,4 @@
 
-import sys
 import time
 import uproot
 
@@ -15,7 +14,7 @@ from scipy.signal import savgol_filter
 start_time = time.time()
 
 
-arguments = pf.parse_args(sys.argv)
+arguments = pf.parse_args()
 in_path   = arguments.in_path
 file_name = arguments.file_name
 out_path  = arguments.out_path

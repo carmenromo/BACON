@@ -1,12 +1,10 @@
 
-import sys
 import uproot
-
 import numpy as np
 
 import peak_functions as pf
 
-arguments = pf.parse_args(sys.argv)
+arguments = pf.parse_args()
 in_path   = arguments.in_path
 file_name = arguments.file_name
 out_path  = arguments.out_path
