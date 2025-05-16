@@ -14,12 +14,16 @@ filename = f"{in_path}/{file_name}.root"
 infile   = uproot.open(filename)
 RawTree  = infile['RawTree']
 
+"""to run this script:
+
+python3 BACoN_data_baseline.py /wherever/your/files/are my_file.root /output/data/"""
+
 outfile = f"{out_path}/BACoN_data_baseline_{file_name}"
 
-all_chs      = range(13) # Includes PMT
+all_chs      = range(13) # Includes the PMT
 max_smpl_bsl = 650
 
-## Thr values valid from 9/10/2024 since the bias voltage was changed
+## Thr values valid for run3 starting on 9/10/2024 since the bias voltage was changed
 std_thr_dict = {0: 13,
                 1: 13,
                 2: 13,
@@ -31,7 +35,8 @@ std_thr_dict = {0: 13,
                 8: 13,
                 9: 30,
                 10: 40,
-                11: 40}
+                11: 40,
+                12: 4}
 
 bsl_mean_i_dict = {}
 bsl_mode_i_dict = {}
