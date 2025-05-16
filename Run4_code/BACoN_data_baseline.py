@@ -1,6 +1,13 @@
+import sys
+import os
 import uproot
-import numpy            as np
-import ..peak_functions as pf
+import numpy  as np
+
+# Add the parent directory to sys.path
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(parent_dir)
+
+import peak_functions as pf
 
 
 arguments = pf.parse_args()
