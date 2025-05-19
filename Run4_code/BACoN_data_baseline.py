@@ -1,5 +1,6 @@
-import sys
 import os
+import sys
+import time
 import uproot
 import numpy  as np
 
@@ -9,6 +10,8 @@ sys.path.append(parent_dir)
 
 import peak_functions as pf
 
+
+start_time = time.time()
 
 arguments = pf.parse_args()
 in_path   = arguments.in_path
@@ -82,3 +85,8 @@ np.savez(outfile,
          bsl_mode_w_dict=bsl_mode_w_dict,
          std_all_dict=std_all_dict,
          max_all_dict=max_all_dict)
+
+
+end_time = time.time()
+elapsed_time = end_time - start_time
+print(f"Elapsed time: {elapsed_time} s, {elapsed_time/60} mins")
