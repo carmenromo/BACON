@@ -1,14 +1,16 @@
 import time
 import uproot
-
 import numpy as np
 
-import ..peak_functions as pf
-import ..blr_functions  as blr
-
-from functools import partial
-
+from functools    import partial
 from scipy.signal import savgol_filter
+
+# Add the parent directory to sys.path
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(parent_dir)
+
+import peak_functions as pf
+import blr_functions  as blr
 
 start_time = time.time()
 

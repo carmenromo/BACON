@@ -1,5 +1,4 @@
 
-import sys
 import time
 import uproot
 
@@ -15,7 +14,7 @@ from scipy.signal import savgol_filter
 start_time = time.time()
 
 
-arguments = pf.parse_args(sys.argv)
+arguments = pf.parse_args()
 in_path   = arguments.in_path
 file_name = arguments.file_name
 out_path  = arguments.out_path
@@ -99,9 +98,9 @@ idx_peaks_max = {ch: np.array(list(map(partial_get_peaks_peakutils, zs_sg_filt_s
                  for ch in normal_chs}
 
 ## Indices when the peak crosses the threshold
-idx_peaks_thr = {ch: np.array([pf.get_values_thr_from_zswf(wf, idx_peaks_max[ch][i])
-                               for i,wf in enumerate(zs_sg_filt_swfs_dict[ch])], dtype=object)
-                 for ch in normal_chs}
+#idx_peaks_thr = {ch: np.array([pf.get_values_thr_from_zswf(wf, idx_peaks_max[ch][i])
+#                               for i,wf in enumerate(zs_sg_filt_swfs_dict[ch])], dtype=object)
+#                 for ch in normal_chs}
 
 ## Height of the max of the peak after SG filter
 height_peaks_sg = {ch: np.array([pf.peak_height(wf, idx_peaks_max[ch][i])
@@ -126,9 +125,9 @@ zs_sg_filt_trigg_dict = {ch: pf.noise_suppression(sg_filt_trigg_dict[ch],
 idx_peaks_max_trigg = {ch: np.array(list(map(partial_get_peaks_peakutils, zs_sg_filt_trigg_dict[ch])), dtype=object)
                            for ch in trigger_chs}
 
-idx_peaks_thr_trigg = {ch: np.array([pf.get_values_thr_from_zswf(wf, idx_peaks_max_trigg[ch][i])
-                                            for i,wf in enumerate(zs_sg_filt_trigg_dict[ch])], dtype=object)
-                               for ch in trigger_chs}
+#idx_peaks_thr_trigg = {ch: np.array([pf.get_values_thr_from_zswf(wf, idx_peaks_max_trigg[ch][i])
+#                                            for i,wf in enumerate(zs_sg_filt_trigg_dict[ch])], dtype=object)
+#                               for ch in trigger_chs}
 
 height_peaks_sg_trigg = {ch: np.array([pf.peak_height(wf, idx_peaks_max_trigg[ch][i])
                                                for i,wf in enumerate(zs_sg_filt_trigg_dict[ch])], dtype=object)
@@ -138,11 +137,11 @@ height_peaks_sg_trigg = {ch: np.array([pf.peak_height(wf, idx_peaks_max_trigg[ch
 np.savez(outfile,
          filt_evts_dict=filt_evts_dict,
          idx_peaks_max=idx_peaks_max,
-         idx_peaks_thr=idx_peaks_thr,
+         #idx_peaks_thr=idx_peaks_thr,
          height_peaks_sg=height_peaks_sg,
          
          idx_peaks_max_trigg=idx_peaks_max_trigg,
-         idx_peaks_thr_trigg=idx_peaks_thr_trigg,
+         #idx_peaks_thr_trigg=idx_peaks_thr_trigg,
          height_peaks_sg_trigg=height_peaks_sg_trigg)
 
 end_time = time.time()

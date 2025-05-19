@@ -147,7 +147,7 @@ def plot_linear_fit(y, yerr):
     plt.errorbar(x, y, yerr=yerr, marker='_', markersize=5, linestyle='', c='k', label=f'Measured gain values')
     plt.plot(x, line, color='r', alpha=0.7, label=f'Fit: y = x*{round(slope, 2)} - {round(np.abs(intercept), 2)}, \n     R$^2$ = {truncate(r_value, 2)}')
     plt.xlabel('Peak number')
-    plt.ylabel('Mu from fit (ADCs)')
+    plt.ylabel('Mu from fit (ADC)')
     plt.legend(fontsize=14, loc='upper left')
     plt.show()
     return slope, intercept
@@ -159,7 +159,7 @@ def fit_spectrum_and_plot(data, channel=7, initial_guess=[1000, 100, 20], bins=1
     popt, pcov = scipy.optimize.curve_fit(multi_gaussian, shift_to_bin_centers(x), y, p0=initial_guess)
     
     plt.plot(x, multi_gaussian(x, *popt), 'r--', label='Fit')
-    plt.xlabel('Amplitude (ADCs)', fontsize=15)
+    plt.xlabel('Amplitude (ADC)', fontsize=15)
     plt.ylabel('Entries/bin',      fontsize=15)
     if title:
         plt.title(title, fontsize=15)
