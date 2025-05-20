@@ -100,7 +100,7 @@ def subtract_baseline_std_lim(wf, mode=True, wf_range_bsl=(0, None), std_lim=50)
     Subtract the baseline to one waveform in the input
     with a specific algorithm (mode or mean).
     """
-    baseline = compute_baseline_std_lim(wf, mode=mode, wf_range_bsl=wf_range_bsl, std_lim=std_lim)
+    baseline = compute_baseline_std_lim_fast(wf, mode=mode, wf_range_bsl=wf_range_bsl, std_lim=std_lim)
     return wf - baseline
 
 def suppress_wf(waveform, threshold):
