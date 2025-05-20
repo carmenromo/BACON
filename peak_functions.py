@@ -55,6 +55,31 @@ def compute_baseline_std_lim(wf, mode=True, wf_range_bsl=(0, None), std_lim=50):
             baseline = np.mean(filt_wf)
     return baseline
 
+def fast_mode(arr):
+    """Fast mode approximation using bincount, assuming integer-like input."""
+    values, counts = np.unique(arr, return_counts=True)
+    return values[np.argmax(counts)]
+
+def compute_baseline_std_lim_fast(wf, mode=True, wf_range_bsl=(0, None), std_lim=50):
+    """
+    Optimized baseline computation using NumPy and fast mode approximation.
+    """
+    wf_sel_region = wf[wf_range_bsl[0]:wf_range_bsl[1]]
+
+    # Use whole waveform for central value estimation
+    central_val = fast_mode(wf.astype(np.int32)) #Use mode to avoid including peaks in the average
+
+    low_bnd = central_val - std_lim
+    upp_bnd = central_val + std_lim
+    filt_wf = wf_sel_region[(wf_sel_region >= low_bnd) & (wf_sel_region <= upp_bnd)]
+
+    if len(filt_wf) == 0:
+        baseline = central_val
+    else:
+        baseline = fast_mode(filt_wf.astype(np.int32)) if mode else np.mean(filt_wf)
+
+    return float(baseline)
+
 def subtract_baseline(wfs, mode=True, wf_range_bsl=(0, None), mean_bsl=True):
     """
     Subtract the baseline to one or multiple waveforms in the input

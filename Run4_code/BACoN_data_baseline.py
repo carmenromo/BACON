@@ -52,8 +52,8 @@ bsl_mean_i_dict = {}
 bsl_mode_i_dict = {}
 bsl_mean_f_dict = {}
 bsl_mode_f_dict = {}
-bsl_mean_w_dict = {} #Check baseline for the whole waveform
-bsl_mode_w_dict = {}
+#bsl_mean_w_dict = {} #Check baseline for the whole waveform
+#bsl_mode_w_dict = {}
 std_all_dict    = {}
 max_all_dict    = {}
 for ch in all_chs:
@@ -61,13 +61,15 @@ for ch in all_chs:
     ## 0) Get waveforms:
     all_wfs = pf.wfs_from_rawtree(RawTree, ch)
 
-    ## 1) Compute the baseline for each channel (mean and mode at the beginning and at the end of each wf)
-    bsl_mode_i_dict[ch] = np.array([pf.compute_baseline_std_lim(wf, mode=True,  wf_range_bsl=(0, max_smpl_bsl),         std_lim=3*std_thr_dict[ch]) for wf in all_wfs])
-    bsl_mean_i_dict[ch] = np.array([pf.compute_baseline_std_lim(wf, mode=False, wf_range_bsl=(0, max_smpl_bsl),         std_lim=3*std_thr_dict[ch]) for wf in all_wfs])
-    bsl_mode_f_dict[ch] = np.array([pf.compute_baseline_std_lim(wf, mode=True,  wf_range_bsl=(7500-max_smpl_bsl, 7500), std_lim=3*std_thr_dict[ch]) for wf in all_wfs])
-    bsl_mean_f_dict[ch] = np.array([pf.compute_baseline_std_lim(wf, mode=False, wf_range_bsl=(7500-max_smpl_bsl, 7500), std_lim=3*std_thr_dict[ch]) for wf in all_wfs])
-    bsl_mode_w_dict[ch] = np.array([pf.compute_baseline_std_lim(wf, mode=True,                                          std_lim=3*std_thr_dict[ch]) for wf in all_wfs])
-    bsl_mean_w_dict[ch] = np.array([pf.compute_baseline_std_lim(wf, mode=False,                                         std_lim=3*std_thr_dict[ch]) for wf in all_wfs])
+    std_lim = 3 * std_thr_dict[ch]
+
+    ## 1) Compute the baseline for each channel (mean and mode at the beginning, end and the whole wf)
+    bsl_mode_i_dict[ch] = np.array([pf.compute_baseline_std_lim_fast(wf, mode=True,  wf_range_bsl=(0, max_smpl_bsl),         std_lim=std_lim) for wf in all_wfs])
+    bsl_mean_i_dict[ch] = np.array([pf.compute_baseline_std_lim_fast(wf, mode=False, wf_range_bsl=(0, max_smpl_bsl),         std_lim=std_lim) for wf in all_wfs])
+    bsl_mode_f_dict[ch] = np.array([pf.compute_baseline_std_lim_fast(wf, mode=True,  wf_range_bsl=(7500-max_smpl_bsl, 7500), std_lim=std_lim) for wf in all_wfs])
+    bsl_mean_f_dict[ch] = np.array([pf.compute_baseline_std_lim_fast(wf, mode=False, wf_range_bsl=(7500-max_smpl_bsl, 7500), std_lim=std_lim) for wf in all_wfs])
+    #bsl_mode_w_dict[ch] = np.array([pf.compute_baseline_std_lim_fast(wf, mode=True,                                          std_lim=std_lim) for wf in all_wfs])
+    #bsl_mean_w_dict[ch] = np.array([pf.compute_baseline_std_lim_fast(wf, mode=False,                                         std_lim=std_lim) for wf in all_wfs])
 
     ## 2) Std of the waveforms
     std_all_dict[ch] = np.std(all_wfs, axis=1)
@@ -81,8 +83,8 @@ np.savez(outfile,
          bsl_mode_i_dict=bsl_mode_i_dict,
          bsl_mean_f_dict=bsl_mean_f_dict,
          bsl_mode_f_dict=bsl_mode_f_dict,
-         bsl_mean_w_dict=bsl_mean_w_dict,
-         bsl_mode_w_dict=bsl_mode_w_dict,
+         #bsl_mean_w_dict=bsl_mean_w_dict,
+         #bsl_mode_w_dict=bsl_mode_w_dict,
          std_all_dict=std_all_dict,
          max_all_dict=max_all_dict)
 
