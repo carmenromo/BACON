@@ -106,6 +106,15 @@ height_peaks_sg = {ch: np.array([pf.peak_height(wf, idx_peaks_max[ch][i])
                                  for i,wf in enumerate(zs_sg_filt_swfs_dict[ch])], dtype=object)
                    for ch in normal_chs}
 
+integral_peaks_sg = {ch: np.array([pf.integrate_and_get_len_peaks_fast(wf, idx_peaks_max[ch][i])[0]
+                                   for i,wf in enumerate(zs_sg_filt_swfs_dict[ch])], dtype=object)
+                     for ch in normal_chs}
+
+len_peaks_sg = {ch: np.array([pf.integrate_and_get_len_peaks_fast(wf, idx_peaks_max[ch][i])[1]
+                              for i, wf in enumerate(zs_sg_filt_swfs_dict[ch])], dtype=object)
+                for ch in normal_chs}
+
+
 #### TRIGGER SIPMS
 ## In the deconvolution the baseline is already subtracted from the waveform!!!
 trigg_cwfs_dict = {ch: np.array([blr.pmt_deconvolver(wf, wf_range_bsl=(0, max_smpl_bsl), std_lim=3*std_thr_dict[ch])
@@ -122,12 +131,20 @@ zs_sg_filt_trigg_dict = {ch: pf.noise_suppression(sg_filt_trigg_dict[ch],
                          for ch in trigger_chs}
 
 idx_peaks_max_trigg = {ch: np.array(list(map(partial_get_peaks_peakutils, zs_sg_filt_trigg_dict[ch])), dtype=object)
-                           for ch in trigger_chs}
+                       for ch in trigger_chs}
 
 
 height_peaks_sg_trigg = {ch: np.array([pf.peak_height(wf, idx_peaks_max_trigg[ch][i])
-                                               for i,wf in enumerate(zs_sg_filt_trigg_dict[ch])], dtype=object)
-                                 for ch in trigger_chs}
+                                       for i,wf in enumerate(zs_sg_filt_trigg_dict[ch])], dtype=object)
+                         for ch in trigger_chs}
+
+integral_peaks_sg_trigg = {ch: np.array([pf.integrate_and_get_len_peaks_fast(wf, idx_peaks_max_trigg[ch][i])[0]
+                                        for i,wf in enumerate(zs_sg_filt_trigg_dict[ch])], dtype=object)
+                           for ch in trigger_chs}
+
+len_peaks_sg_trigg = {ch: np.array([pf.integrate_and_get_len_peaks_fast(wf, idx_peaks_max_trigg[ch][i])[1]
+                                   for i, wf in enumerate(zs_sg_filt_trigg_dict[ch])], dtype=object)
+                      for ch in trigger_chs}
 
 
 ## Get the trigger time and select events in normal chs
@@ -145,8 +162,12 @@ np.savez(outfile,
          filt_evts_dict=filt_evts_dict,
          idx_peaks_max=idx_peaks_max,
          height_peaks_sg=height_peaks_sg,
+         integral_peaks_sg=integral_peaks_sg,
+         len_peaks_sg=len_peaks_sg,
          idx_peaks_max_trigg=idx_peaks_max_trigg,
-         height_peaks_sg_trigg=height_peaks_sg_trigg)
+         height_peaks_sg_trigg=height_peaks_sg_trigg,
+         integral_peaks_sg_trigg=integral_peaks_sg_trigg,
+         len_peaks_sg_trigg=len_peaks_sg_trigg)
 #         trigger_samp=trigger_samp,
 #         mean_trigg_t_normal_chs=mean_trigg_t_normal_chs)
 
