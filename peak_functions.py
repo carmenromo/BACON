@@ -229,6 +229,8 @@ def integrate_peaks(waveform, peaks):
     return np.array([np.sum(waveform[idx]) for idx in peaks_indxs])
 
 def integrate_and_get_len_peaks(waveform, peaks):
+    if np.isscalar(peaks):  # Handles single integer or float
+        peaks = [peaks]
 
     peaks_indxs = []
     peaks_lens  = []
@@ -250,6 +252,35 @@ def integrate_and_get_len_peaks(waveform, peaks):
         peaks_lens .append(len(peak_indxs)) # Num of timesamples of the ZS peak
     
     return np.array([np.sum(waveform[idx]) for idx in peaks_indxs]), np.array(peaks_lens)
+
+def integrate_and_get_len_peaks_fast(waveform, peaks):
+    if np.isscalar(peaks):
+        peaks = [peaks]
+    elif isinstance(peaks, np.ndarray) and peaks.ndim == 0:
+        peaks = [int(peaks)]
+
+    areas   = []
+    lengths = []
+
+    for p in peaks:
+        # Expand left
+        left = p
+        while left > 0 and waveform[left - 1] > 0:
+            left -= 1
+
+        # Expand right
+        right = p
+        while right < len(waveform) - 1 and waveform[right + 1] > 0:
+            right += 1
+
+        inds   = np.arange(left, right + 1)
+        values = waveform[inds]
+
+        areas  .append(np.sum(values))
+        lengths.append(len(inds))
+
+    return np.array(areas), np.array(lengths)
+
 
 def area_and_len_of_peaks(waveforms, peaks):
     all_areas_and_lens = [integrate_and_get_len_peaks(wf, pk) for wf, pk in zip(waveforms, peaks)]
