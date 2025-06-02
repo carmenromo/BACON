@@ -1,0 +1,109 @@
+\documentclass[11pt,a4paper,english,oneside, pdf]{article}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage[utf8]{inputenc} %Permite introducir directamente acentos: á en lugar de \'a etc.
+\usepackage{mathtools}
+\usepackage{palatino}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows}
+
+
+\title{BACoN analysis RUN 4}
+\author{Carmen Romo Luque}
+
+\graphicspath{{/Users/romoluque_c/Repositories/BACON_romo/analysis_documentation_run3/images/}}
+
+\begin{document}
+	\maketitle
+	
+	
+	\tableofcontents
+	
+	
+	\clearpage
+	
+	\section{Before data analysis}
+	
+	To analyze the data it is better to use the NERSC cluster. I always copy each BACoN file as the data is collected. I created time ago a folder in NERSC to host the BACoN root files and for the new data taking period we can use the directory: \verb|/pscratch/sd/r/romo/bacon_data/run4/|. To copy the files you can do in the UNM machine:
+	
+	\begin{verbatim}
+		scp bacon_files user@perlmutter.nersc.gov:/pscratch/sd/r/romo/bacon_data/run4/
+	\end{verbatim}
+	
+	It usually takes around 30 seconds to copy each file.
+	
+	
+	\section{How to run my scripts}
+	
+	Important!! My scripts are made to analyze one file at a time, but with this \href{https://github.com/carmenromo/BACON/blob/main/BACoN_signal_processing_all_files.py}{script}
+	
+	 ($BACoN\_signal\_processing\_all\_files.py$), you can call all the files with same initial name and execute any desired script from my repo. For example:
+	
+	\begin{verbatim}
+		$ python3 BACoN_signal_processing_all_files.py
+		 Run4_code/BACoN_signal_processing_hits_and_times_run4.py
+		 /pscratch/sd/r/romo/bacon_data/run3/ run-11_11_2024 
+		  /pscratch/sd/r/romo/bacon_data_npz/run3/
+	\end{verbatim}
+	
+	Here we would been executing the script \verb|BACoN_signal_processing_hits_and_times_run4.py| located in the directory \verb|Run4_code|, we would be pointing to the folder where the files of run3 are, would be calling all the files starting with \verb|run-11_11_2024|, so
+	
+	 \begin{verbatim}
+	 	run-11_11_2024-file.root
+	 	run-11_11_2024-file_1.root
+	 	run-11_11_2024-file_2.root ...
+	 \end{verbatim}
+	 
+	 and the last path corresponds to the directory where we want the output files.
+	 
+	
+	With these scripts you could send jobs to the NERSC queue or execute the scripts directly (what I usually do is to open some \verb|screen| terminals and run the script for all files of October, or November, or whenever).
+	
+	\section{First look at the data and initial checks}
+	
+	I recommend to first take a look at the data and do some initial checks before analyzing all files. For this I like jupyter notebooks (you can use the tools in NERSC or copy a couple of files to your laptop and use jupyter there, this is the option I prefer because it is faster than NERSC and I don't need connection every time). The example notebook I sent some months ago can be found  \href{https://github.com/carmenromo/BACON/blob/main/example_notebooks/Run3_new_setup/Intro_to_BACoN_data.ipynb}{here}.
+	
+	Some initial checks I use to do:
+	
+	\begin{enumerate}
+		\item Check that all channels (trigger and non-trigger SiPMs and PMT) have waveforms (in the past some channels eventually stopped working).
+		\item Plot some waveforms for each channel (SiPMs and PMT).
+		\item Try to identify baseline events, events with light, background events, events that saturate...
+		\item Plot sum of waveforms for each individual channel.
+	\end{enumerate}
+	
+	
+	
+	\section{Fast analysis using my code}
+	
+	The main script is \verb|BACoN_signal_processing_hits_and_times_run4.py|. There I extract the indices, heights and integrals of the peaks from the photons detected by the SiPMs (trigger and non-trigger).
+	
+	Then, an \textit{.npz} file is created with this information from each file of data and I analyze all the files, concatenate theis results and make the plots with the notebook \verb|Analyze_BACoN_hits.ipynb|. There I plot the hit maps using the height or the integral vs the timestamp of each peak, and from the sum of the amplitudes (generally I use the heights of the peaks) for each individual timestamp, I obtain the time distribution for each channel. From a linear fit of the time distribution selecting the range of the triplet, I get the decay constant (everything is in that jupyter notebook). There there is also the fit for the PMT data (although some cuts need to be performed, right now the time distribution is very ugly). The script to do the analysis of the PMT data is \href{https://github.com/carmenromo/BACON/blob/main/BACoN_pmt_analysis_peaks.py}{$BACoN\_pmt\_analysis\_peaks.py$}, which can be run in the same way the script \verb|BACoN_signal_processing_hits_and_times_run4.py|.
+	
+	\section{Deeper analysis steps}
+	
+	Once you have made sure that the data looks ok, you should go deeper and continue with:
+	
+	\begin{enumerate}
+		\item Now that we have LEDs installed inside BACoN it would be great to calibrate the channels using them.
+		\item Check the standard deviation of the waveforms for each channel (it gives an idea of the baseline stability). Check the standard deviation threshold per channel (it allows to reject baseline waveforms, which is important to make code faster because we don't iterate over the waveforms we don't need). Be careful because the values depend on the bias voltage applied to the channels. Typical values I used for the non-trigger channels are: 13-14 ADC, for trigger channels: 30-40 ADC and for the PMT: 4 ADC. But then to reject baseline events I multiplied the standard deviation by 3.
+		\item Check trigger time in the trigger SiPMs and confirm pretrigger region for baseline computation (0-650 timestamps).
+		\item Compare baseline in the whole waveform and at the beginning and end of waveform for a few files (you can use this script  \href{https://github.com/carmenromo/BACON/blob/main/Run4_code/BACoN_data_baseline.py}{$BACoN\_data\_baseline.py$}). I'd do it for one file at the beginning of the run and one at the end maybe, the script takes too long.
+		\item Check that the subtracted waveforms are centered at 0.
+		\item Check parameters of Savitzki-Golay filter ($window\_len=30$ and $polyorder=3$).
+		\item Check height, integral and shape of the single photoelectron (and 2PE and 3PE) for each channel of the SiPMs and the PMT.
+		\item Check the $min\_dist=50$ ns (25 time samples) of the peak finder algorithm and threshold (80 ADC for normal chs and 200 ADC for trigger chs) for the zero zuppression.
+		\item Compute heights (from baseline, no deconvolution) and integral of peaks. Get the times of the maximum, not the threshold (it affects the singlet and the region afterwards). (\href{https://github.com/carmenromo/BACON/blob/main/Run4_code/BACoN_signal_processing_hits_and_times_run4.py}{$BACoN\_signal\_processing\_hits\_and\_times\_run4.py$}).
+		\item Understand required cuts: rejection of events before the trigger region? rejection of high light events? Selection of 1PE events as in LLAMA?
+		\item Calibration of all channels (SiPMs and PMT) using the heights and the integrals to transform from ADC to PE.
+		\item Compute time distributions and make fit.
+		\item Compute the sum of detected PE for the 3 trigger SiPMs. We should be able to see the 60 keV gamma peak.
+		\item Check pile-up events.
+		\item Check PMT data analysis.
+	\end{enumerate}
+	
+	
+
+\end{document}
