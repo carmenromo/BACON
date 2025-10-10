@@ -30,7 +30,7 @@ RawTree  = infile['RawTree']
 
 """to run this script:
 
-python3 BACoN_signal_processing_hits_and_times_run5_trigger_chs.py /wherever/your/files/are my_file.root /output/data/"""
+python3 BACoN_signal_processing_hits_and_times_run5.py /wherever/your/files/are my_file.root /output/data/"""
 
 ## Parameters
 max_smpl_bsl        = 650
@@ -55,12 +55,63 @@ std_thr_dict = {0: 12.75,
                 11: 45,
                 12: 4}
 
-outfile = f"{out_path}/BACoN_run5_hits_and_times_trigg_chs_thr{thr_ADC_trigg}_mean_w{sg_filter_window}_dist{min_dist}_{file_name}"
+outfile = f"{out_path}/BACoN_run5_hits_and_times_thr{thr_ADC}_mean_w{sg_filter_window}_dist{min_dist}_{file_name}"
 
+normal_chs  = range(9)
 trigger_chs = [9, 10, 11]
+
+#### CHANNELS FROM 0 TO 8:
+## In the normal SiPMs, a filter is performed to remove the baseline evts
+filt_wfs_dict = {ch: np.array([(evt, wf)
+                               for evt, wf in enumerate(pf.wfs_from_rawtree(RawTree, ch)) if np.std(wf) > std_thr_dict[ch]], dtype=object)
+                 for ch in normal_chs}
+
+#filt_evts = np.unique(np.concatenate(np.array([filt_wfs_dict[ch].T[0] for ch in normal_chs])))
+filt_evts_dict = {ch: filt_wfs_dict[ch].T[0]
+                  if len(filt_wfs_dict[ch])!=0 else []
+                  for ch in normal_chs}
+
+## Baseline subtraction
+subt_wfs_dict = {ch: np.array([pf.subtract_baseline_std_lim(fwf,
+                                                            mode=False,
+                                                            wf_range_bsl=(0, max_smpl_bsl),
+                                                            std_lim=3*std_thr_dict[ch])
+                                                            for _, fwf in filt_wfs_dict[ch]])
+                 if len(filt_wfs_dict[ch])!=0 else []
+                 for ch in normal_chs}
+
+## Apply the Savitzky-Golay filter to smooth the wf
+sg_filt_swfs_dict = {ch: savgol_filter(subt_wfs_dict[ch],
+                                       window_length=sg_filter_window,
+                                       polyorder=sg_filter_polyorder)
+                     if len(subt_wfs_dict[ch]) != 0 else []
+                     for ch in normal_chs}
+
+## Noise suppression
+zs_sg_filt_swfs_dict = {ch: pf.noise_suppression(sg_filt_swfs_dict[ch],
+                                                 threshold=thr_ADC)
+                        if len(sg_filt_swfs_dict[ch]) != 0 else []
+                        for ch in normal_chs}
 
 ## Get peaks above thr_ADC
 partial_get_peaks_peakutils = partial(pf.get_peaks_peakutils, thres=thr_ADC, min_dist=min_dist, thres_abs=True)
+
+## Indices of the max of the peak
+idx_peaks_max = {ch: np.array(list(map(partial_get_peaks_peakutils, zs_sg_filt_swfs_dict[ch])), dtype=object)
+                 for ch in normal_chs}
+
+## Height of the max of the peak after SG filter
+height_peaks_sg = {ch: np.array([pf.peak_height(wf, idx_peaks_max[ch][i])
+                                 for i,wf in enumerate(zs_sg_filt_swfs_dict[ch])], dtype=object)
+                   for ch in normal_chs}
+
+integral_peaks_sg = {ch: np.array([pf.integrate_and_get_len_peaks_fast(wf, idx_peaks_max[ch][i])[0]
+                                   for i,wf in enumerate(zs_sg_filt_swfs_dict[ch])], dtype=object)
+                     for ch in normal_chs}
+
+len_peaks_sg = {ch: np.array([pf.integrate_and_get_len_peaks_fast(wf, idx_peaks_max[ch][i])[1]
+                              for i, wf in enumerate(zs_sg_filt_swfs_dict[ch])], dtype=object)
+                for ch in normal_chs}
 
 
 #### TRIGGER SIPMS
@@ -95,6 +146,11 @@ len_peaks_sg_trigg = {ch: np.array([pf.integrate_and_get_len_peaks_fast(wf, idx_
                       for ch in trigger_chs}
 
 np.savez(outfile,
+         filt_evts_dict=filt_evts_dict,
+         idx_peaks_max=idx_peaks_max,
+         height_peaks_sg=height_peaks_sg,
+         integral_peaks_sg=integral_peaks_sg,
+         len_peaks_sg=len_peaks_sg,
          idx_peaks_max_trigg=idx_peaks_max_trigg,
          height_peaks_sg_trigg=height_peaks_sg_trigg,
          integral_peaks_sg_trigg=integral_peaks_sg_trigg,

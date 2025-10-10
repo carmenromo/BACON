@@ -93,15 +93,16 @@ def string_fit(f, units='ADC', ndec=2, print_chi2=True):
     else:
         return f'{mu_str}'+'\n'+f'{sig_str}'
     
-def gaussian_fit_IC(data, bins=100, prange=(-50, 150), ampl=100, mean=0, sigma=10, frange=(-50, 50), title='', xlabel='Amplitude (ADC)', units='ADC', ndec=2, print_chi2=True, figsize=(8,5)):
+def gaussian_fit_IC(data, bins=100, prange=(-50, 150), ampl=100, mean=0, sigma=10, frange=(-50, 50), title='', xlabel='Amplitude (ADC)', units='ADC', ndec=2, print_chi2=True, figsize=(8,5), ylim=(None, None)):
     plt.figure(figsize=figsize)
-    y, x, _ = plt.hist(data, bins=bins, alpha=0.5, range=prange, histtype='step', linewidth=1.5)
+    y, x, _ = plt.hist(data, bins=bins, alpha=0.5, range=prange, histtype='step', lw=1.5)
     plt.axvspan(frange[0], frange[1], color='grey', alpha=0.2)
     f = fit(gauss, shift_to_bin_centers(x), y, (ampl,mean,sigma), fit_range=frange, sigma=np.sqrt(y))
 
     plt.plot(shift_to_bin_centers(x), gauss(shift_to_bin_centers(x), *f.values[:3]), 'r--',
              label=string_fit(f, ndec=ndec, print_chi2=print_chi2, units=units))
     plt.errorbar(shift_to_bin_centers(x), y, yerr=np.sqrt(y), fmt='.k', elinewidth=0.5, capsize=2, capthick=1)
+    plt.ylim(ylim)
     plt.title(title)
     plt.xlabel(xlabel)
     plt.ylabel('Entries/bin')
@@ -111,7 +112,7 @@ def gaussian_fit_IC(data, bins=100, prange=(-50, 150), ampl=100, mean=0, sigma=1
     return f_values(f)
 
 def gaussian_fit_IC_subplot(ax, data, bins=100, prange=(-50, 150), ampl=100, mean=0, sigma=10, frange=(-50, 50), title='', xlabel='Amplitude (ADC)', units='ADC', ndec=2, print_chi2=True):
-    y, x, _ = ax.hist(data, bins=bins, alpha=0.5, range=prange, histtype='step', linewidth=1.5)
+    y, x, _ = ax.hist(data, bins=bins, alpha=0.5, range=prange, histtype='step', lw=1.5)
     f = fit(gauss, shift_to_bin_centers(x), y, (ampl,mean,sigma), fit_range=frange, sigma=np.sqrt(y))
 
     ax.plot(shift_to_bin_centers(x), gauss(shift_to_bin_centers(x), *f.values[:3]), 'r--',
@@ -144,7 +145,7 @@ def plot_linear_fit(y, yerr):
     line = slope*x + intercept
 
     plt.figure(figsize=(8,5))
-    plt.errorbar(x, y, yerr=yerr, marker='_', markersize=5, linestyle='', c='k', label=f'Measured gain values')
+    plt.errorbar(x, y, yerr=yerr, marker='_', markersize=5, ls='', c='k', label=f'Measured gain values')
     plt.plot(x, line, color='r', alpha=0.7, label=f'Fit: y = x*{round(slope, 2)} - {round(np.abs(intercept), 2)}, \n     R$^2$ = {truncate(r_value, 2)}')
     plt.xlabel('Peak number')
     plt.ylabel('Mu from fit (ADC)')
@@ -160,7 +161,7 @@ def fit_spectrum_and_plot(data, channel=7, initial_guess=[1000, 100, 20], bins=1
     
     plt.plot(x, multi_gaussian(x, *popt), 'r--', label='Fit')
     plt.xlabel('Amplitude (ADC)', fontsize=15)
-    plt.ylabel('Entries/bin',      fontsize=15)
+    plt.ylabel('Entries/bin',     fontsize=15)
     if title:
         plt.title(title, fontsize=15)
     else:
