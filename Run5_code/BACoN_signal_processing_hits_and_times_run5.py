@@ -37,7 +37,7 @@ max_smpl_bsl        = 650
 #std_bsl_thr        =  15
 sg_filter_window    =  30
 sg_filter_polyorder =   3
-thr_ADC             =  80 #ths for the noise suppression and peak finder after SG filter
+thr_ADC             =  50 #ths for the noise suppression and peak finder after SG filter
 thr_ADC_trigg       = 250 #ths for the noise suppression and peak finder after SG filter for the trigger SiPMs
 min_dist            =  25 #min distance in t samples between peaks for peakutils
 
