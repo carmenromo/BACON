@@ -116,7 +116,7 @@ len_peaks_sg = {ch: np.array([pf.integrate_and_get_len_peaks_fast(wf, idx_peaks_
 
 #### TRIGGER SIPMS
 ## In the deconvolution the baseline is already subtracted from the waveform!!!
-trigg_cwfs_dict = {ch: np.array([blr.pmt_deconvolver(wf, wf_range_bsl=(0, max_smpl_bsl), std_lim=3*std_thr_dict[ch])
+trigg_cwfs_dict = {ch: np.array([blr.deconvolver(wf, wf_range_bsl=(0, max_smpl_bsl), std_lim=3*std_thr_dict[ch])
                                  for wf in pf.wfs_from_rawtree(RawTree, ch)])
                    for ch in trigger_chs}
 
