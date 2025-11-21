@@ -11,14 +11,34 @@ import peakutils
 import blr_functions as blr
 
 def parse_args():
+    """
+    Parse command-line arguments for the analysis scripts.
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument('in_path'  , help = "input files path"   )
     parser.add_argument('file_name', help = "name of input files")
     parser.add_argument('out_path' , help = "output files path"  )
     return parser.parse_args()
 
+
 def wfs_from_rawtree(RawTree, channel):
+    """
+    Extract waveform samples for a specific channel from a RAW ROOT tree.
+
+    Parameters
+    ----------
+    RawTree : uproot.behaviors.TBranch.TBranch or similar
+        ROOT tree containing digitized waveform data.
+    channel : int or str
+        Channel number identifying the waveform branch.
+
+    Returns
+    -------
+    numpy.ndarray
+        Array of waveform samples for the selected channel.
+    """
     return np.array(RawTree[f'chan{channel}/rdigi'].array())
+
 
 def compute_baseline(wf, mode=True, wf_range_bsl=(0, None)):
     """
@@ -56,13 +76,41 @@ def compute_baseline_std_lim(wf, mode=True, wf_range_bsl=(0, None), std_lim=50):
     return baseline
 
 def fast_mode(arr):
-    """Fast mode approximation using bincount, assuming integer-like input."""
+    """
+    Compute the mode (most frequent value) of an array.
+
+    Parameters
+    ----------
+    arr : array-like
+        Input array of values (assumed to be integer-like or discrete).
+
+    Returns
+    -------
+    value
+        The most frequently occurring value in the array.
+    """
     values, counts = np.unique(arr, return_counts=True)
     return values[np.argmax(counts)]
 
 def compute_baseline_std_lim_fast(wf, mode=True, wf_range_bsl=(0, None), std_lim=50):
     """
-    Optimized baseline computation using NumPy and fast mode approximation.
+    Compute the waveform baseline using a fast mode-based method.
+
+    Parameters
+    ----------
+    wf : array-like
+        Input waveform.
+    mode : bool, default True
+        If True, estimate baseline using the mode; otherwise use the mean.
+    wf_range_bsl : tuple(int, int or None), default (0, None)
+        Index range of the waveform used for baseline estimation.
+    std_lim : float, default 50
+        Amplitude window around the central value used to filter samples.
+
+    Returns
+    -------
+    float
+        Estimated baseline value.
     """
     wf_sel_region = wf[wf_range_bsl[0]:wf_range_bsl[1]]
 
@@ -97,22 +145,64 @@ def subtract_baseline(wfs, mode=True, wf_range_bsl=(0, None), mean_bsl=True):
 
 def subtract_baseline_std_lim(wf, mode=True, wf_range_bsl=(0, None), std_lim=50):
     """
-    Subtract the baseline to one waveform in the input
-    with a specific algorithm (mode or mean).
+    Subtract the estimated baseline from a waveform.
+
+    Parameters
+    ----------
+    wf : array-like
+        Input waveform.
+    mode : bool, default True
+        If True, estimate baseline using the mode; otherwise use the mean.
+    wf_range_bsl : tuple(int, int or None), default (0, None)
+        Index range of the waveform used for baseline estimation.
+    std_lim : float, default 50
+        Amplitude window around the central value used for baseline filtering.
+
+    Returns
+    -------
+    array-like
+        Waveform with baseline subtracted.
     """
     baseline = compute_baseline_std_lim_fast(wf, mode=mode, wf_range_bsl=wf_range_bsl, std_lim=std_lim)
     return wf - baseline
 
 def suppress_wf(waveform, threshold):
-    """Put zeros where the waveform is below some threshold.
+    """
+    Set values from a single waveform below a threshold to zero.
+
+    Parameters
+    ----------
+    waveform : array-like
+        Input waveform.
+    threshold : float
+        Values below this threshold will be set to zero.
+
+    Returns
+    -------
+    array-like
+        Waveform with values below the threshold suppressed.
     """
     wf = np.copy(waveform)
     below_thr = wf <= threshold
     wf[below_thr] = 0
     return wf
 
+
 def noise_suppression(waveforms, threshold=0):
-    """Put zeros where the waveform is below some threshold.
+    """
+    Set values from a set of waveforms below a threshold to zero.
+
+    Parameters
+    ----------
+    waveforms : array-like
+        Input waveforms.
+    threshold : float
+        Values below this threshold will be set to zero.
+
+    Returns
+    -------
+    array-like
+        Waveform array with values below the threshold suppressed.
     """
     thresholds     = np.tile(threshold, len(waveforms))
     suppressed_wfs = list(map(suppress_wf, waveforms, thresholds))
@@ -135,9 +225,6 @@ def split_in_peaks_vals(wfs, stride, len_peak=5):
         return [wfs[peak] for peak in ind_peaks_splitted]
     else:
         return []
-
-def peak_height(waveform, peaks):
-    return np.array([waveform[peak] for peak in peaks])
 
 def peak_height_deconv(zs_waveform, peaks, heights, thr=50):
     if len(peaks)==1:
@@ -253,7 +340,47 @@ def integrate_and_get_len_peaks(waveform, peaks):
     
     return np.array([np.sum(waveform[idx]) for idx in peaks_indxs]), np.array(peaks_lens)
 
+def peak_height(waveform, peaks):
+    """
+    Return the values of a waveform at given peak positions.
+
+    Parameters
+    ----------
+    waveform : array-like
+        Input waveform.
+    peaks : array-like
+        Indices of the peaks in the waveform.
+
+    Returns
+    -------
+    numpy.ndarray
+        Array of waveform values at the specified peak indices.
+    """
+    return np.array([waveform[peak] for peak in peaks])
+
+
 def integrate_and_get_len_peaks_fast(waveform, peaks):
+    """
+    Compute the area and width of peaks in a waveform.
+
+    For each peak index, the function expands left and right while the
+    waveform remains positive, then integrates (sum) the values in that
+    region and returns its length.
+
+    Parameters
+    ----------
+    waveform : array-like
+        Input waveform.
+    peaks : int or array-like
+        Peak index or list/array of peak indices.
+
+    Returns
+    -------
+    areas : numpy.ndarray
+        Integrated values (sum) of each peak region.
+    lengths : numpy.ndarray
+        Number of samples in each peak region.
+    """
     if np.isscalar(peaks):
         peaks = [peaks]
     elif isinstance(peaks, np.ndarray) and peaks.ndim == 0:
@@ -281,6 +408,29 @@ def integrate_and_get_len_peaks_fast(waveform, peaks):
 
     return np.array(areas), np.array(lengths)
 
+
+def get_peaks_peakutils(waveform, thres=0.35, min_dist=100, thres_abs=False):
+    """
+    Detect peak positions in a waveform using peakutils.
+
+    Parameters
+    ----------
+    waveform : array-like
+        Input waveform.
+    thres : float, optional
+        Threshold for peak detection. Interpreted as a fraction of the
+        maximum value unless `thres_abs=True`.
+    min_dist : int, optional
+        Minimum number of samples separating adjacent peaks.
+    thres_abs : bool, optional
+        If True, `thres` is treated as an absolute amplitude threshold.
+
+    Returns
+    -------
+    numpy.ndarray
+        Indices of detected peaks.
+    """
+    return peakutils.indexes(waveform, thres=thres, min_dist=min_dist, thres_abs=thres_abs)
 
 def area_and_len_of_peaks(waveforms, peaks):
     all_areas_and_lens = [integrate_and_get_len_peaks(wf, pk) for wf, pk in zip(waveforms, peaks)]
@@ -310,9 +460,6 @@ def remove_waveforms_by_indices(waveforms, indices_to_remove):
         return waveforms
     filtered_waveforms = np.delete(waveforms, indices_to_remove, axis=0)
     return filtered_waveforms
-
-def get_peaks_peakutils(waveform, thres=0.35, min_dist=100, thres_abs=False):
-    return peakutils.indexes(waveform, thres=thres, min_dist=min_dist, thres_abs=thres_abs)
 
 def get_peaks_using_peakutils(RawTree, channel, num_wfs=None, sipm_thr=50, pmt_thr=1000, peak_range=(650,850)):
     all_raw_wfs       = wfs_from_rawtree(RawTree, channel)[:num_wfs]

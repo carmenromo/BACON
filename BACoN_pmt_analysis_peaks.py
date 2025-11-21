@@ -21,34 +21,36 @@ RawTree  = infile['RawTree']
 
 outfile = f"{out_path}/BACoN_pmt_analysis_peaks_{file_name}"
 
-all_chs      = range(13)
+## Parameters
+ch           = 12
+std_thr      = 4
 max_smpl_bsl = 650
 thr_ADC_pmt  = 20
 min_dist_pmt = 15
 
-## Thr values valid from 9/10/2024 since the bias voltage was changed
-std_thr_dict = {0: 13,
-                1: 13,
-                2: 13,
-                3: 13,
-                4: 14,
-                5: 13,
-                6: 12,
-                7: 13,
-                8: 13,
-                9: 30,
-                10: 40,
-                11: 40,
-                12: 4}
+## In the deconvolution the baseline is already subtracted from the waveform
+swfs = np.array([blr.deconvolver(wf, wf_range_bsl=(0, max_smpl_bsl), baseline_mode=False, std_lim=3*std_thr)
+                 for wf in pf.wfs_from_rawtree(RawTree, ch)])
 
-ch    = 12
-wfs   = pf.wfs_from_rawtree(RawTree, ch)
-swfs  = np.array([blr.pmt_deconvolver(wf, wf_range_bsl=(0, max_smpl_bsl), baseline_mode=False, std_lim=3*std_thr_dict[ch]) for wf in wfs])
+## Noise suppression
 zswfs = pf.noise_suppression(swfs, threshold=thr_ADC_pmt)
+
+## Get peaks above the chosen threshold thr_ADC_pmt
 partial_get_peaks_peakutils = partial(pf.get_peaks_peakutils, thres=thr_ADC_pmt, min_dist=min_dist_pmt, thres_abs=True)
-idx_peaks_max               = np.array(list(map(partial_get_peaks_peakutils, zswfs)), dtype=object)
-height_peaks                = pf.height_of_peaks(zswfs, idx_peaks_max)       ## Heights and integrals concatenated
-integral_peaks, len_peaks   = pf.area_and_len_of_peaks(zswfs, idx_peaks_max) ## Heights and integrals concatenated
+
+## Indices of the maximum of the peak
+idx_peaks_max = np.array([partial_get_peaks_peakutils(wf) for wf in zswfs], dtype=object)
+
+## Height of the max of the peak after SG filter
+height_peaks = np.array([pf.peak_height(wf, idx_peaks_max[i])
+                         for i,wf in enumerate(zswfs)], dtype=object)
+
+## Integral and length of the integrated peaks
+integral_results = [pf.integrate_and_get_len_peaks_fast(wf, peaks)
+                    for wf, peaks in zip(zswfs, idx_peaks_max)]
+
+integral_peaks = np.array([r[0] for r in integral_results], dtype=object)
+len_peaks      = np.array([r[1] for r in integral_results], dtype=object)
 
 np.savez(outfile,
          h_peaks_pmt=height_peaks,

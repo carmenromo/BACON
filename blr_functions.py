@@ -19,7 +19,35 @@ def deconvolve_signal(signal_daq,
                       thr_trigger            =     5,
                       accum_discharge_length =  5000):
     """
-    Function adapted from IC
+    Deconvolve a digitized waveform using a BLR-like algorithm adapted from the NEXT experiment.
+
+    The function removes baseline, applies a high-pass cleaning filter, and
+    performs a Blind Lead Removal (BLR) deconvolution with an accumulator that
+    grows and discharges depending on trigger conditions.
+
+    Parameters
+    ----------
+    signal_daq : array-like
+        Input raw digitized waveform.
+    coeff_clean : float, optional
+        Cutoff coefficient for the high-pass cleaning filter.
+    coeff_blr : float, optional
+        BLR deconvolution coefficient controlling the accumulator response.
+    baseline_mode : bool, optional
+        Baseline estimation mode used by `compute_baseline_std_lim`.
+    wf_range_bsl : tuple, optional
+        Index range used for baseline estimation.
+    std_lim : float, optional
+        Standard deviation threshold for baseline computation.
+    thr_trigger : float, optional
+        Trigger threshold multiplier (relative to noise RMS).
+    accum_discharge_length : int, optional
+        Maximum number of accumulator discharge steps.
+
+    Returns
+    -------
+    numpy.ndarray
+        Deconvolved waveform.
     """
     
     thr_acum = thr_trigger / coeff_blr
@@ -64,27 +92,44 @@ def deconvolve_signal(signal_daq,
     return np.asarray(signal_r)
 
 
-def blr_deconv_pmt(pmtrwf,
-                   coeff_c,
-                   coeff_blr,
-                   baseline_mode          = False,
-                   wf_range_bsl           = (0, None),
-                   std_lim                =   50,
-                   thr_trigger            =    5,
-                   accum_discharge_length = 5000):
+def blr_deconv(rwf,
+               coeff_c,
+               coeff_blr,
+               baseline_mode          = False,
+               wf_range_bsl           = (0, None),
+               std_lim                =   50,
+               thr_trigger            =    5,
+               accum_discharge_length = 5000):
     """
-    Deconvolve all the PMTs in the event.
-    :param pmtrwf: array of PMTs holding the raw waveform
-    :param coeff_c:     cleaning coefficient
-    :param coeff_blr:   deconvolution coefficient
-    :param n_baseline:  number of samples taken to compute baseline
-    :param thr_trigger: threshold to start the BLR process
-    
-    :returns: an array with deconvoluted PMTs.
+    Apply BLR deconvolution to a single raw waveform. In BACoN it should be used for the trigger SiPMs and the PMT
+
+    Parameters
+    ----------
+    rwf : array-like
+        Raw input waveform to be deconvolved.
+    coeff_c : float
+        Cleaning filter coefficient (high-pass).
+    coeff_blr : float
+        BLR deconvolution coefficient.
+    baseline_mode : bool, optional
+        Baseline estimation mode.
+    wf_range_bsl : tuple, optional
+        Index range used for baseline computation.
+    std_lim : float, optional
+        Standard deviation limit for baseline calculation.
+    thr_trigger : float, optional
+        Trigger threshold multiplier.
+    accum_discharge_length : int, optional
+        Maximum accumulator discharge length.
+
+    Returns
+    -------
+    numpy.ndarray
+        Deconvolved waveform.
     """
 
-    nwf      = len(pmtrwf)
-    signal_i = pmtrwf.astype(np.double)
+    nwf      = len(rwf)
+    signal_i = rwf.astype(np.double)
     signal_r = np.zeros(nwf, dtype=np.double)
 
     signal_r = deconvolve_signal(signal_i,
@@ -98,16 +143,36 @@ def blr_deconv_pmt(pmtrwf,
     return signal_r
 
 
-def pmt_deconvolver(rwf,
-                    baseline_mode = False,
-                    wf_range_bsl  = (0, None),
-                    std_lim       = 50):
+def deconvolver(rwf,
+                baseline_mode = False,
+                wf_range_bsl  = (0, None),
+                std_lim       = 50):
+    """
+    Wrapper for BLR deconvolution using default NEXT coefficients.
+
+    Parameters
+    ----------
+    rwf : array-like
+        Raw input waveform.
+    baseline_mode : bool, optional
+        Baseline estimation mode.
+    wf_range_bsl : tuple, optional
+        Index range used for baseline computation.
+    std_lim : float, optional
+        Standard deviation limit for baseline calculation.
+
+    Returns
+    -------
+    numpy.ndarray
+        Deconvolved waveform using averaged NEXT coefficients.
+    """
+
     coeff_c    = np.mean(coeff_c_NEXT)
     coeff_blr  = np.mean(coeff_blr_NEXT)
 
-    return blr_deconv_pmt(rwf,
-                          coeff_c,
-                          coeff_blr,
-                          baseline_mode=baseline_mode,
-                          wf_range_bsl=wf_range_bsl,
-                          std_lim=std_lim)
+    return blr_deconv(rwf,
+                      coeff_c,
+                      coeff_blr,
+                      baseline_mode=baseline_mode,
+                      wf_range_bsl=wf_range_bsl,
+                      std_lim=std_lim)
