@@ -25,7 +25,7 @@ outfile = f"{out_path}/BACoN_pmt_analysis_peaks_{file_name}"
 ch           = 12
 std_thr      = 3.5
 max_smpl_bsl = 650
-thr_ADC_pmt  = 15
+thr_ADC_pmt  = 8
 min_dist_pmt = 15
 
 ## In the deconvolution the baseline is already subtracted from the waveform
