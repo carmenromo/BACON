@@ -47,7 +47,10 @@ def compute_baseline(wf, mode=True, wf_range_bsl=(0, None)):
     a specific range.
     """
     if mode:
-        baseline = st.mode(wf[wf_range_bsl[0]:wf_range_bsl[1]], keepdims=False).mode.astype(np.float32)
+        try:
+            baseline = st.mode(wf[wf_range_bsl[0]:wf_range_bsl[1]], keepdims=False).mode.astype(np.float32)
+        except TypeError:
+            baseline = st.mode(wf[wf_range_bsl[0]:wf_range_bsl[1]], axis=None).mode[0].astype(np.float32)
     else:
         baseline = np.mean(wf[wf_range_bsl[0]:wf_range_bsl[1]])
     return baseline
@@ -59,15 +62,19 @@ def compute_baseline_std_lim(wf, mode=True, wf_range_bsl=(0, None), std_lim=50):
     and a certain limit on the amplitude.
     """
     wf_sel_region = wf[wf_range_bsl[0]:wf_range_bsl[1]]
-    low_bnd = st.mode(wf, keepdims=False).mode.astype(np.float32) - std_lim #ADC
-    upp_bnd = st.mode(wf, keepdims=False).mode.astype(np.float32) + std_lim #ADC
+    try:
+        mode_val = st.mode(wf, keepdims=False).mode
+    except TypeError:
+        mode_val = st.mode(wf, axis=None).mode[0]
+
+    low_bnd = float(mode_val) - std_lim
+    upp_bnd = float(mode_val) + std_lim
     filt_wf = wf_sel_region[(wf_sel_region >= low_bnd) & (wf_sel_region <= upp_bnd)]
     if len(filt_wf)==0:
         if mode:
             baseline = st.mode(wf, keepdims=False).mode.astype(np.float32)
         else:
             baseline = np.mean(wf)
-
     else:
         if mode:
             baseline = st.mode(filt_wf, keepdims=False).mode.astype(np.float32)

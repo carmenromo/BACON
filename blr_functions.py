@@ -34,7 +34,7 @@ def deconvolve_signal(signal_daq,
     coeff_blr : float, optional
         BLR deconvolution coefficient controlling the accumulator response.
     baseline_mode : bool, optional
-        Baseline estimation mode used by `compute_baseline_std_lim`.
+        Baseline estimation mode used by `compute_baseline_std_lim_fast`.
     wf_range_bsl : tuple, optional
         Index range used for baseline estimation.
     std_lim : float, optional
@@ -54,7 +54,7 @@ def deconvolve_signal(signal_daq,
     len_signal_daq = len(signal_daq)
 
     # Compute baseline
-    baseline = pf.compute_baseline_std_lim(signal_daq, mode=baseline_mode, wf_range_bsl=wf_range_bsl, std_lim=std_lim)
+    baseline = pf.compute_baseline_std_lim_fast(signal_daq, mode=baseline_mode, wf_range_bsl=wf_range_bsl, std_lim=std_lim)
 
     # Reverse sign of signal and subtract baseline
     signal_daq_bs = baseline - signal_daq
