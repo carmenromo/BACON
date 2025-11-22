@@ -19,14 +19,14 @@ filename = f"{in_path}/{file_name}.root"
 infile   = uproot.open(filename)
 RawTree  = infile['RawTree']
 
-outfile = f"{out_path}/BACoN_pmt_analysis_peaks_{file_name}"
-
 ## Parameters
 ch           = 12
 std_thr      = 3.5
 max_smpl_bsl = 650
-thr_ADC_pmt  = 8
+thr_ADC_pmt  = 20
 min_dist_pmt = 15
+
+outfile = f"{out_path}/BACoN_pmt_analysis_peaks_thr{thr_ADC_pmt}_dist{min_dist_pmt}_{file_name}"
 
 ## In the deconvolution the baseline is already subtracted from the waveform
 swfs = np.array([blr.deconvolver(wf, wf_range_bsl=(0, max_smpl_bsl), baseline_mode=False, std_lim=3*std_thr)
