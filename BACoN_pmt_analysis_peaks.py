@@ -53,6 +53,7 @@ integral_peaks = np.array([r[0] for r in integral_results], dtype=object)
 len_peaks      = np.array([r[1] for r in integral_results], dtype=object)
 
 np.savez(outfile,
+         idx_peaks_pmt=idx_peaks_max,
          h_peaks_pmt=height_peaks,
          i_peaks_pmt=integral_peaks,
          l_peaks_pmt=len_peaks)
