@@ -139,8 +139,8 @@ def truncate(number, decimals=0):
     factor = 10.0 ** decimals
     return math.trunc(number * factor) / factor
 
-def plot_linear_fit(y, yerr):
-    x    = np.arange(len(y))+1
+def plot_linear_fit(y, yerr, first_peak=1):
+    x    = np.arange(len(y)) + first_peak
     slope, intercept, r_value, _, _ = scipy.stats.linregress(x, y)
     line = slope*x + intercept
 

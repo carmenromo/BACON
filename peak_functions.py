@@ -366,9 +366,11 @@ def peak_height(waveform, peaks):
     return np.array([waveform[peak] for peak in peaks])
 
 
-def integrate_and_get_len_peaks_fast(waveform, peaks):
+def integrate_separated_peaks_nozeros(waveform, peaks):
     """
-    Compute the area and width of peaks in a waveform.
+    Compute the area and width of peaks in a waveform, integrating each peak separately:
+    - Boundaries determined by minima between peaks
+    - Ignore indices where waveform == 0.
 
     For each peak index, the function expands left and right while the
     waveform remains positive, then integrates (sum) the values in that
@@ -388,32 +390,59 @@ def integrate_and_get_len_peaks_fast(waveform, peaks):
     lengths : numpy.ndarray
         Number of samples in each peak region.
     """
-    if np.isscalar(peaks):
-        peaks = [peaks]
-    elif isinstance(peaks, np.ndarray) and peaks.ndim == 0:
-        peaks = [int(peaks)]
+
+    waveform = np.asarray(waveform)
+    peaks    = np.sort(np.asarray(peaks, dtype=int))
 
     areas   = []
     lengths = []
 
-    for p in peaks:
-        # Expand left
-        left = p
-        while left > 0 and waveform[left - 1] > 0:
-            left -= 1
+    N = len(waveform)
 
-        # Expand right
-        right = p
-        while right < len(waveform) - 1 and waveform[right + 1] > 0:
-            right += 1
+    for i, p in enumerate(peaks):
 
-        inds   = np.arange(left, right + 1)
-        values = waveform[inds]
+        #Left boundary
+        if i == 0:
+            # For first peak: move left while waveform decreases
+            left = p - 1
+            while left > 0 and waveform[left] <= waveform[left + 1]:
+                left -= 1
+        else:
+            prev_p = peaks[i - 1]
+            # The minimum between previous peak and this peak
+            rel_min = np.argmin(waveform[prev_p:p+1])
+            left = prev_p + rel_min
 
-        areas  .append(np.sum(values))
-        lengths.append(len(inds))
+        #Right boundary
+        if i == len(peaks) - 1:
+            # Last peak: move right while waveform decreases
+            right = p + 1
+            while right < N - 1 and waveform[right] <= waveform[right - 1]:
+                right += 1
+        else:
+            next_p = peaks[i + 1]
+            # The minimum between this peak and the next one
+            rel_min = np.argmin(waveform[p:next_p+1])
+            right = p + rel_min
+
+        #Integration window
+        inds = np.arange(left, right + 1)
+
+        # REMOVE ZERO-AMPLITUDE indices
+        inds = inds[waveform[inds] > 0]
+
+        if len(inds) == 0:
+            areas  .append(0.0)
+            lengths.append(0)
+            continue
+
+        # Integrate only over positive-amplitude samples
+        vals = waveform[inds]
+        areas  .append(np.sum(vals))
+        lengths.append(len(vals))
 
     return np.array(areas), np.array(lengths)
+
 
 
 def get_peaks_peakutils(waveform, thres=0.35, min_dist=100, thres_abs=False):

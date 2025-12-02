@@ -105,12 +105,15 @@ height_peaks_sg = {ch: np.array([pf.peak_height(wf, idx_peaks_max[ch][i])
                                  for i,wf in enumerate(zs_sg_filt_swfs_dict[ch])], dtype=object)
                    for ch in normal_chs}
 
-integral_peaks_sg = {ch: np.array([pf.integrate_and_get_len_peaks_fast(wf, idx_peaks_max[ch][i])[0]
-                                   for i,wf in enumerate(zs_sg_filt_swfs_dict[ch])], dtype=object)
+## Integral of the peaks and length of the integrated peaks
+results = {ch: [pf.integrate_separated_peaks_nozeros(wf, idx_peaks_max[ch][i])
+                for i, wf in enumerate(zs_sg_filt_swfs_dict[ch])]
+           for ch in normal_chs}
+
+integral_peaks_sg = {ch: np.array([res[0] for res in results[ch]], dtype=object)
                      for ch in normal_chs}
 
-len_peaks_sg = {ch: np.array([pf.integrate_and_get_len_peaks_fast(wf, idx_peaks_max[ch][i])[1]
-                              for i, wf in enumerate(zs_sg_filt_swfs_dict[ch])], dtype=object)
+len_peaks_sg = {ch: np.array([res[1] for res in results[ch]], dtype=object)
                 for ch in normal_chs}
 
 
@@ -137,13 +140,16 @@ height_peaks_sg_trigg = {ch: np.array([pf.peak_height(wf, idx_peaks_max_trigg[ch
                                        for i,wf in enumerate(zs_sg_filt_trigg_dict[ch])], dtype=object)
                          for ch in trigger_chs}
 
-integral_peaks_sg_trigg = {ch: np.array([pf.integrate_and_get_len_peaks_fast(wf, idx_peaks_max_trigg[ch][i])[0]
-                                        for i,wf in enumerate(zs_sg_filt_trigg_dict[ch])], dtype=object)
-                           for ch in trigger_chs}
+## Integral of the peaks and length of the integrated peaks
+results_trigg = {ch: [pf.integrate_separated_peaks_nozeros(wf, idx_peaks_max_trigg[ch][i])
+                      for i, wf in enumerate(zs_sg_filt_trigg_dict[ch])]
+                 for ch in trigger_chs}
 
-len_peaks_sg_trigg = {ch: np.array([pf.integrate_and_get_len_peaks_fast(wf, idx_peaks_max_trigg[ch][i])[1]
-                                   for i, wf in enumerate(zs_sg_filt_trigg_dict[ch])], dtype=object)
-                      for ch in trigger_chs}
+integral_peaks_sg_trigg = {ch: np.array([res[0] for res in results_trigg[ch]], dtype=object)
+                     for ch in trigger_chs}
+
+len_peaks_sg_trigg = {ch: np.array([res[1] for res in results_trigg[ch]], dtype=object)
+                for ch in trigger_chs}
 
 np.savez(outfile,
          filt_evts_dict=filt_evts_dict,
