@@ -46,7 +46,7 @@ height_peaks = np.array([pf.peak_height(wf, idx_peaks_max[i])
                          for i,wf in enumerate(zswfs)], dtype=object)
 
 ## Integral and length of the integrated peaks
-integral_results = [pf.integrate_and_get_len_peaks_fast(wf, peaks)
+integral_results = [pf.integrate_separated_peaks_nozeros(wf, peaks)
                     for wf, peaks in zip(zswfs, idx_peaks_max)]
 
 integral_peaks = np.array([r[0] for r in integral_results], dtype=object)
