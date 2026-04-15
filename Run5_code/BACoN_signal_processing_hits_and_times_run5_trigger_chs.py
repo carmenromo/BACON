@@ -37,7 +37,6 @@ max_smpl_bsl        = 650
 #std_bsl_thr        =  15
 sg_filter_window    =  30
 sg_filter_polyorder =   3
-thr_ADC             =  80 #ths for the noise suppression and peak finder after SG filter
 thr_ADC_trigg       = 250 #ths for the noise suppression and peak finder after SG filter for the trigger SiPMs
 min_dist            =  25 #min distance in t samples between peaks for peakutils
 
@@ -60,7 +59,7 @@ outfile = f"{out_path}/BACoN_run5_hits_and_times_trigg_chs_thr{thr_ADC_trigg}_me
 trigger_chs = [9, 10, 11]
 
 ## Get peaks above thr_ADC
-partial_get_peaks_peakutils = partial(pf.get_peaks_peakutils, thres=thr_ADC, min_dist=min_dist, thres_abs=True)
+partial_get_peaks_peakutils = partial(pf.get_peaks_peakutils, thres=thr_ADC_trigg, min_dist=min_dist, thres_abs=True)
 
 
 #### TRIGGER SIPMS
@@ -86,11 +85,11 @@ height_peaks_sg_trigg = {ch: np.array([pf.peak_height(wf, idx_peaks_max_trigg[ch
                                        for i,wf in enumerate(zs_sg_filt_trigg_dict[ch])], dtype=object)
                          for ch in trigger_chs}
 
-integral_peaks_sg_trigg = {ch: np.array([pf.integrate_and_get_len_peaks_fast(wf, idx_peaks_max_trigg[ch][i])[0]
+integral_peaks_sg_trigg = {ch: np.array([pf.integrate_and_get_len_peaks(wf, idx_peaks_max_trigg[ch][i])[0]
                                         for i,wf in enumerate(zs_sg_filt_trigg_dict[ch])], dtype=object)
                            for ch in trigger_chs}
 
-len_peaks_sg_trigg = {ch: np.array([pf.integrate_and_get_len_peaks_fast(wf, idx_peaks_max_trigg[ch][i])[1]
+len_peaks_sg_trigg = {ch: np.array([pf.integrate_and_get_len_peaks(wf, idx_peaks_max_trigg[ch][i])[1]
                                    for i, wf in enumerate(zs_sg_filt_trigg_dict[ch])], dtype=object)
                       for ch in trigger_chs}
 
